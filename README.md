@@ -53,6 +53,28 @@ The agent will:
 - Learn categories: [MOSSupportTaskTaxonomy.md](./MOSSupportTaskTaxonomy.md)
 - Get connections: [MOSSystemConnectionsReference.md](./MOSSystemConnectionsReference.md)
 
+**🔧 Setup & Configuration:**
+- **[SETUP.md](./SETUP.md)** - Authentication & local setup (Azure CLI, database, Outlook)
+- **[GITHUB_SECRETS_SETUP.md](./GITHUB_SECRETS_SETUP.md)** - GitHub Actions automation secrets
+
+---
+
+## 🤖 GitHub Actions Automation
+
+**Automated Mossy Agent runs every 6 hours on GitHub!**
+
+✅ Processes ADO tickets tagged "Mossy Review"  
+✅ Investigates using Claude API  
+✅ Posts results back to ADO automatically  
+✅ Runs 24/7 even when your computer is off  
+
+**Setup Required:**
+1. Add `ANTHROPIC_API_KEY` secret → [Already done!](./GITHUB_SECRETS_SETUP.md)
+2. Add `AZURE_DEVOPS_PAT` secret → [Instructions here](./GITHUB_SECRETS_SETUP.md#2-azure_devops_pat-required-for-automation)
+3. Test with manual trigger → [Workflow page](https://github.com/Tayzer9266/siepe/actions)
+
+**See:** [GITHUB_SECRETS_SETUP.md](./GITHUB_SECRETS_SETUP.md) for complete guide
+
 ---
 
 ## 📁 Folder Structure
