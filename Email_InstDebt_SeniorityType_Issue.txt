@@ -1,0 +1,90 @@
+Subject: RESOLVED - Missing SeniorityType Data for Bond CUSIP 21871DAG8 (Corelogic)
+
+Hi Himanshu and [Manager],
+
+I wanted to update you on the InstDebt data issue we've been investigating today.
+
+ISSUE SUMMARY
+-------------
+The portal was not displaying SeniorityType information for bond CUSIP 21871DAG8 (Corelogic, Inc. CLGX 9% 08/01/31). The query returned NULL for SeniorityTypeID and SeniorityType fields.
+
+IMMEDIATE RESOLUTION
+--------------------
+✅ FIXED - The Corelogic bond now correctly displays "Senior Secured" on the portal.
+
+I manually inserted the InstDebt record directly into the Reference database using the following data (sourced from the Solvas normalization view):
+- InstID: 1000598849
+- SeniorityType: Senior Secured (ID: 1000000001)
+- Issue Date: 2026-07-17
+- Maturity Date: 2031-08-01
+- Original Amount: $1,650,000,000
+
+ROOT CAUSE DISCOVERED
+---------------------
+During investigation, we found a systemic issue with the InstDebt data pipeline that affects ALL bonds, not just this one:
+
+1. The automated SSIS packages are running successfully but creating ZERO records
+
+   **Package 1: GenericPushInstDebt.dtsx** (Feeds → Core)
+   - Location: \\998s02.mos.siepe.local\Siepe\Data\SSIS\Push\GenericPushInstDebt.dtsx
+   - Purpose: Push normalized data from Feeds.Solvas to Core.dbo.tInstDebt
+   - Execution time: 1.469 seconds (should be 5-10+ seconds for 11,024 records)
+   - Status: Returns SUCCESS (DTSER_SUCCESS) but creates 0 records
+   - Source data: 11,024 normalized records exist and are ready to process
+   
+   **Package 2: PushInstDebt.dtsx** (Core → Reference)
+   - Location: \\998s02.mos.siepe.local\Siepe\Data\SSIS\Push\PushInstDebt.dtsx
+   - Purpose: Push InstDebt records from Core to Reference database (portal data source)
+   - Execution time: 1 second (also too fast)
+   - Status: Returns SUCCESS but creates 0 records
+   
+   **Log file:** C:\Siepe\Data\Logs\InstDebt_CompletePush.20260729T140434.txt
+
+2. This is a "silent success failure" pattern
+   - Packages complete without errors but process zero rows
+   - SSIS considers "no data to process" as success, so no errors are logged
+   - Fast execution times indicate the packages aren't actually processing data
+   - No validation exists to detect this scenario
+
+3. The automated job (Script Adapter 1008) hasn't run in 5 MONTHS (last successful: 2026-02-27)
+   - No Report Subscription is triggering it
+   - Last successful InstDebt creation was 13 DAYS ago (2026-07-16)
+   - We have a 13-day backlog of missing InstDebt data
+
+IMPACT
+------
+- Potentially affects multiple bonds beyond the Corelogic one reported
+- Any new bonds added to Solvas between 2026-07-17 and today are missing InstDebt attributes on the portal
+- Users may be missing critical bond information (seniority, issue dates, maturity dates, amounts, etc.)
+
+NEXT STEPS REQUIRED
+-------------------
+1. IMMEDIATE: Investigate why SSIS packages process zero rows despite source data existing
+   - Need someone with SSIS/Visual Studio access to open the packages and review data flow
+   - Check if RefDataSetDate parameter is properly mapped in the SQL queries
+   - Add row count validation to detect this type of failure in the future
+
+2. MEDIUM-TERM: Backfill missing data
+   - Process 13 days of backlog (2026-07-17 through 2026-07-29)
+   - Verify all new bonds from this period have complete InstDebt attributes
+
+3. LONG-TERM: Set up monitoring and automation
+   - Create Report Subscription to trigger Script Adapter 1008 daily
+   - Add validation to PowerShell scripts to detect zero-row scenarios
+   - Monitor for data freshness (alert if no new InstDebt records in 24 hours)
+
+FILES CREATED
+-------------
+I created the following for future use (once SSIS issue is fixed):
+- InstDebt_CompletePush.ps1 - Automated script for both push stages (Feeds→Core→Reference)
+- Create_InstDebt_ScriptAdapter.sql - SQL to register the automation
+- InstDebt_Automation_Setup_Guide.md - Complete documentation
+
+TEMPORARY WORKAROUND
+--------------------
+If more bonds need immediate fixes before the SSIS issue is resolved, I can manually insert records using the same procedure. However, this is not scalable for the full backlog.
+
+Please let me know if you need any clarification or additional information.
+
+Thanks,
+[Your Name]

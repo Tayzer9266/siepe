@@ -1,0 +1,192 @@
+ 
+--Price Weighting is set up for this company for this RefDataSource
+SELECT * FROM core.dbo.vPositionPriceWeightingActive  
+WHERE CompanyID IN (500000004,500000006)
+SELECT * FROM reference.dbo.vInstArbitrationRefDataSourceConfigRaw  
+WHERE RefDataSourceID = 1000000168
+
+Sycamore Price Weighting for MOS Ops Price Override  
+EXEC core.dbo.pPositionPriceWeightingI  
+@ReferenceRefDataSourceID = 1000000168 --MOS Ops Price Overrides  
+,@CompanyID = 500000004  
+,@Weight = 900  
+,@Level1CriteriaType = 'None'  
+,@Level1CriteriaID = 99999999  
+,@Level2CriteriaType = 'None'  
+,@Level2CriteriaValue = 'None'  
+,@PriceType = 'Bid'  
+,@EffFromDate = '1900-01-01'  
+,@EffThruDate = '9999-01-01' 
+
+
+
+-----------------------------------------------------------------------------------
+# Current Coupon vs All-In Rate - Team Inquiry Response
+
+**Date:** 2026-07-24
+**Security:** LX235201
+**Related Task:** TASK 85092
+**Previous Bug:** #84955 (investigated and resolved)
+
+---
+
+## Team Message
+
+> Hi Team, 
+> 
+> Sharon highlighted below, I cant seem to get to the bottom of it either. The current coupon isnt the same as the all in rate. Which is strange because they should be driven by the same index and spread.
+
+---
+
+## Response (Drafted)
+
+Hi Team,
+
+I investigated this issue and found that **the difference between Current Coupon and All-In Rate is expected behavior** for floating rate loans.
+
+**Why they're different:**
+
+- **All-In Rate (5.394%)** = Contract-level rate (SOFR base + 1.75% spread) calculated for the **next payment period**
+  - Standardized across all positions
+  - Consistent calculation
+
+- **Current Coupon (5.415%, 5.449%)** = **Position-specific accrual rate**
+  - Varies by fund based on purchase date, accrual method, and settlement timing
+  - Reflects actual accrued interest for each individual position
+
+**Normal variance:** ±2 to ±5 basis points between the two rates is **expected and correct**.
+
+For LX235201 specifically:
+- 7/17: +2.13 bps variance ✓ Normal
+- 7/20: +5.47 bps variance ✓ Normal
+
+Both rates ARE driven by the same SOFR index and spread, but they serve different purposes in the system. The All-In Rate is forward-looking (next period), while Current Coupon is position-specific accrual.
+
+Full investigation details are in **TASK 85092**: https://siepe.visualstudio.com/_workitems/edit/85092
+
+Let me know if you need any clarification!
+
+---
+
+## Investigation Summary
+
+### Queries Used:
+
+**Query 1: Contract-Level Rate**
+```sql
+SELECT *
+FROM core.dbo.vInstContractCashFlowActive t
+JOIN core.dbo.vinstbyidentifier ii ON ii.instid = t.instid 
+WHERE ii.loanxid = 'LX235201' 
+ORDER BY allinrate DESC
+```
+
+**Query 2: Position-Level Rate**
+```sql
+SELECT 
+    PortfolioCode,
+    SecurityId,
+    AsOfDate,
+    CurrentCoupon,
+    MarketValue,
+    AccruedInterest
+FROM Lumen.dbo.vCollateralDetail
+WHERE SecurityId = 'LX235201'
+    AND AsOfDate >= '2026-07-15'
+ORDER BY AsOfDate DESC, PortfolioCode
+```
+
+### Key Findings:
+
+- **SOFR Base Rate:** 3.64392% (1-month SOFR)
+- **Fixed Spread:** 1.75%
+- **All-In Rate:** 5.39392%
+- **Current Coupon:** 5.415% - 5.449% (varies by portfolio)
+- **Variance:** 2.13 - 5.47 basis points (within normal range)
+
+### Historical Context:
+
+24-month rate history shows:
+- Peak: 7.09% (July 2024)
+- Current: 5.39% (July 2026)
+- Decline: -169 basis points (reflects Fed rate cuts 2024-2026)
+- Spread: 1.75% maintained consistently
+
+### Conclusion:
+
+✅ **This is expected behavior, not a data issue**
+✅ **No action required**
+✅ **Both calculations are correct for their intended purposes**
+✅ **Previous bug #84955 was based on misunderstanding - closed**
+
+---
+
+## Documentation
+
+**Full Skill Documentation:**
+- [coupon-rate-all-in-rate-investigation.md](coupon-rate-all-in-rate-investigation.md)
+
+**Investigation Reports:**
+- RateInvestigation_545_InstID500010497_20260724.md
+- RateInvestigation_LX235201_InstID500010497_20260724.md  
+- SupplementaryAnalysis_LX235201_vInstContractCashFlowActive_20260724.md
+
+**Azure DevOps Ticket:**
+- https://siepe.visualstudio.com/_workitems/edit/85092
+
+---
+
+## Next Steps
+
+If team responds with additional questions:
+1. Reference the skill documentation
+2. Provide specific variance calculations
+3. Explain accrual method differences if needed
+4. Offer to review specific portfolios showing higher variance
+
+---
+
+**Status:** Awaiting team response
+**Owner:** Tay Nguyen (MOS Support)
+**Priority:** Low (expected behavior explained)
+Possibly manually maintained or requires a separate update process
+💡 Questions to Resolve:
+Is All In Rate calculated?
+
+Formula: All In Rate = Base Rate + Spread + Fees?
+Or is it a fed field from external source?
+Where is this data stored?
+
+Solvas Facility or Deal_Facility tables?
+MOS custom tables?
+Report-only calculated field?
+What should update it?
+
+Should recalculate when Current Coupon changes?
+Needs manual trigger/stored procedure?
+Missing normalization job?
+Would you like me to continue investigating the stored procedures or data flow for these fields?
+
+
+Source of the compliance report
+
+DECLARE @FundIDsTable IDsTableType
+DECLARE @HistDate DATETIME = DATEADD(dd, -1, DATEDIFF(dd, 0, GETDATE()))
+
+Select @HistDate
+
+INSERT INTO @FundIDsTable (Id)
+VALUES (500013004) -- OCP CLO 2024-33, LTD. -- dbo.vFund
+
+EXEC CLOComplianceData.pContractCashflowData @HistDate, @FundIDsTable
+
+
+--- run this to check prices:
+
+select*
+
+from core.dbo.vInstContractCashFlowActive t
+
+join core.dbo.vinstbyidentifier ii on ii.instid = t.instid 
+
+where ii.loanxid = 'LX235201' order by allinrate  desc

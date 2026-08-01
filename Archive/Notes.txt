@@ -1,0 +1,106 @@
+Reporting
+Price Exception Report
+Reactive reports
+Our position
+Vendor pricing 0 MoS
+Solvis THrid Party Accounting
+
+https://siepe.visualstudio.com/Siepe.Software/_wiki/wikis/Siepe%20Wiki/2281/Price-Exception-Not-Matching-MarkIT-ICE-or-ICE-OR-NULL-Marks
+
+sycamoore sent file to solvis for pricing
+
+Pricing
+Market >> Secmaster >> Sycamoore
+Bug
+
+Refresh - Mos -
+
+how do I find out when something in a table got updated if it doesn't have an updatedate/by column?
+core.dbo.vPositionPriceWeightingActive
+
+
+single report = ad hoc
+
+
+------------  Transaction Balance Refresh ----------------------------
+
+SELECT PFM.*, CPM.CompanyID, CPM.Company, RefPortfolio, RefPortfolioid   
+
+FROM Core.dbo.vPortfolioFundMapCurrent PFM   
+
+JOIN Reference.dbo.vPortfolioPortfolioMapCurrent PMC ON PMC.COREPortfolioid = PFM.PortfolioID AND RefDataSource = 'Solvas Portfolio'  
+
+JOIN Core.dbo.vCompanyPortfolioMap CPM ON CPM.PortfolioID = PFM.PortfolioID
+
+WHERE CPM.Portfolio LIKE '%liberty%'
+ 
+-- Checking positions refresh status
+
+SELECT TOP 10 *  
+
+FROM Feeds.dbo.vRefDataSet  
+
+--where refdatasettype = 'position'  
+
+WHERE Label LIKE '%1000000805%'---LoggingOnly'  
+
+AND refdatasource = 'Solvas Portfolio'  
+
+ORDER BY 1 DESC
+ 
+SELECT TOP 100 *  
+
+FROM Reference.dbo.vRefDataSet  
+
+--where refdatasettype = 'position'  
+
+WHERE Label LIKE '%1000000805%'---LoggingOnly'  
+
+AND refdatasource = 'Solvas Portfolio'  
+
+ORDER BY 1 DESC
+ 
+SELECT TOP 60 *  
+
+FROM Core.dbo.vRefDataSet  
+
+--where refdatasettype = 'trade'  ORDER BY 1 DESC
+
+WHERE label LIKE '%500000100%'---LoggingOnly' 
+
+AND RefDatasetType = 'Position'  
+
+ORDER BY 1 DESC
+ 
+SELECT TOP 300 * 
+
+FROM Core.dbo.vRefDataSet
+
+--WHERE Label LIKE '%Global%'
+
+ORDER BY 1 DESC
+ 
+ 
+-- To make sure these showed up in Aristotle's environment (with their connection string)
+
+SELECT TOP 1000 *  
+
+FROM core.dbo.vRefDataSet  
+
+where RefDatasetType LIKE '%Position%' --'Transaction'--'Position'   
+
+	--AND RefDataSetDate BETWEEN '2026-04-29 00:00:00.000' AND '2026-05-01 00:00:00.000'
+
+	AND CreatedDate > '2026-07-16'
+
+	AND RefDataSource = 'Siepe MOS'
+
+ORDER BY 1 DESC
+ 
+Quick Guide to Solvas|MOS and MOS|Client Position & Transaction|Cash Balances Refreshes - Overview
+
+	
+            Azure DevOps Services | Sign In
+        
+
+ 

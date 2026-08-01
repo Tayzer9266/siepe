@@ -1,0 +1,235 @@
+name: Mossy Automated Review Agent
+
+# ============================================
+# GitHub Actions Workflow for Automated Mossy Agent
+# ============================================
+# 
+# PURPOSE: Process ADO tickets tagged "Mossy Review" automatically
+#          using Claude API - runs 24/7 even when computer is OFF
+# 
+# COST: FREE for public repos (unlimited minutes)
+#       FREE for private repos (2,000 minutes/month)
+# 
+# SCHEDULE: Every 6 hours (configurable)
+# 
+# ============================================
+
+on:
+  # Scheduled execution - choose ONE of these (uncomment the one you want)
+  schedule:
+    # Every 6 hours
+    - cron: '0 */6 * * *'
+    
+    # Or daily at 9 AM UTC (4 AM EST)
+    # - cron: '0 9 * * *'
+    
+    # Or weekly on Monday at 6 AM UTC
+    # - cron: '0 6 * * 1'
+  
+  # Allow manual trigger from GitHub Actions UI
+  workflow_dispatch:
+    inputs:
+      max_tickets:
+        description: 'Maximum tickets to process'
+        required: false
+        default: '5'
+      dry_run:
+        description: 'Dry run (do not post to ADO)'
+        required: false
+        default: 'false'
+
+jobs:
+  process-mossy-review:
+    name: Process Mossy Review Tickets
+    runs-on: windows-latest  # Use Windows runner for native PowerShell
+    
+    steps:
+      # Step 1: Checkout code from repository
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      # Step 2: Verify PowerShell environment
+      - name: Check PowerShell version
+        shell: pwsh
+        run: |
+          Write-Host "╔════════════════════════════════════════════════════════════════╗" -ForegroundColor Cyan
+          Write-Host "║     MOSSY AUTOMATED AGENT - GitHub Actions Runner             ║" -ForegroundColor Cyan
+          Write-Host "╚════════════════════════════════════════════════════════════════╝" -ForegroundColor Cyan
+          Write-Host ""
+          Write-Host "PowerShell Version: $($PSVersionTable.PSVersion)" -ForegroundColor Yellow
+          Write-Host "OS: $($PSVersionTable.OS)" -ForegroundColor Yellow
+          Write-Host "Platform: $($PSVersionTable.Platform)" -ForegroundColor Yellow
+          Write-Host "Execution Time: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss UTC')" -ForegroundColor Yellow
+          Write-Host ""
+      
+      # Step 3: Install Azure CLI (for ADO access)
+      - name: Install Azure CLI
+        shell: pwsh
+        run: |
+          Write-Host "Installing Azure CLI..." -ForegroundColor Cyan
+          
+          # Download and install Azure CLI
+          Invoke-WebRequest -Uri https://aka.ms/installazurecliwindows -OutFile AzureCLI.msi
+          Start-Process msiexec.exe -ArgumentList '/i', 'AzureCLI.msi', '/quiet', '/norestart' -Wait
+          
+          # Add to PATH
+          $env:Path += ";C:\Program Files\Microsoft SDKs\Azure\CLI2\wbin"
+          
+          # Verify installation
+          az --version
+          
+          Write-Host "✓ Azure CLI installed successfully" -ForegroundColor Green
+      
+      # Step 4: Login to Azure DevOps
+      - name: Login to Azure DevOps
+        shell: pwsh
+        env:
+          AZURE_DEVOPS_PAT: ${{ secrets.AZURE_DEVOPS_PAT }}
+        run: |
+          Write-Host "Authenticating with Azure DevOps..." -ForegroundColor Cyan
+          
+          # Login using Personal Access Token
+          echo $env:AZURE_DEVOPS_PAT | az devops login --organization https://dev.azure.com/mosdata
+          
+          # Set default organization and project
+          az devops configure --defaults organization=https://dev.azure.com/mosdata project=MOS
+          
+          Write-Host "✓ Azure DevOps authenticated" -ForegroundColor Green
+      
+      # Step 5: Create output directory
+      - name: Setup output directory
+        shell: pwsh
+        run: |
+          $outputDir = "Output\AutomatedInvestigations"
+          if (-not (Test-Path $outputDir)) {
+              New-Item -ItemType Directory -Path $outputDir -Force | Out-Null
+          }
+          Write-Host "✓ Output directory ready: $outputDir" -ForegroundColor Green
+      
+      # Step 6: Run Mossy automated agent
+      - name: Process Mossy Review tickets
+        shell: pwsh
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          Write-Host "════════════════════════════════════════════════════════════════" -ForegroundColor Magenta
+          Write-Host "  Starting Mossy Automated Agent" -ForegroundColor Magenta
+          Write-Host "════════════════════════════════════════════════════════════════" -ForegroundColor Magenta
+          
+          # Navigate to script directory
+          cd .github\skills\ado-mossy-review
+          
+          # Determine max tickets (from manual input or default)
+          $maxTickets = 5
+          if ($env:GITHUB_EVENT_NAME -eq 'workflow_dispatch') {
+              $maxTickets = [int]${{ github.event.inputs.max_tickets }}
+          }
+          
+          # Determine dry run mode
+          $dryRun = $false
+          if ($env:GITHUB_EVENT_NAME -eq 'workflow_dispatch') {
+              $dryRun = '${{ github.event.inputs.dry_run }}' -eq 'true'
+          }
+          
+          Write-Host "Configuration:" -ForegroundColor Yellow
+          Write-Host "  Max Tickets: $maxTickets" -ForegroundColor White
+          Write-Host "  Dry Run: $dryRun" -ForegroundColor White
+          Write-Host ""
+          
+          # Run automation script
+          if ($dryRun) {
+              .\Process-MossyReview-Automated.ps1 -MaxTicketsToProcess $maxTickets -DryRun
+          } else {
+              .\Process-MossyReview-Automated.ps1 -MaxTicketsToProcess $maxTickets
+          }
+          
+          Write-Host ""
+          Write-Host "════════════════════════════════════════════════════════════════" -ForegroundColor Magenta
+          Write-Host "  Mossy Automated Agent Complete" -ForegroundColor Magenta
+          Write-Host "════════════════════════════════════════════════════════════════" -ForegroundColor Magenta
+      
+      # Step 7: Upload investigation reports as artifacts
+      - name: Upload investigation reports
+        uses: actions/upload-artifact@v4
+        if: always()  # Upload even if previous step fails
+        with:
+          name: investigation-reports-${{ github.run_number }}
+          path: Output/AutomatedInvestigations/*.md
+          retention-days: 30
+          if-no-files-found: warn
+      
+      # Step 8: Post summary to GitHub Actions
+      - name: Create job summary
+        if: always()
+        shell: pwsh
+        run: |
+          # Find latest investigation reports
+          $reports = Get-ChildItem -Path "Output\AutomatedInvestigations\*.md" -ErrorAction SilentlyContinue | 
+                     Sort-Object LastWriteTime -Descending
+          
+          $summary = @"
+          ## 🤖 Mossy Automated Agent - Execution Summary
+          
+          **Run Time:** $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss UTC')  
+          **Workflow:** ${{ github.workflow }}  
+          **Run Number:** ${{ github.run_number }}  
+          **Trigger:** ${{ github.event_name }}
+          
+          ---
+          
+          ### 📊 Investigation Reports Generated
+          
+          "@ 
+          
+          if ($reports.Count -eq 0) {
+              $summary += "`n**No investigation reports generated** (no tickets with 'Mossy Review' tag found)`n"
+          } else {
+              $summary += "`n**Total Reports:** $($reports.Count)`n`n"
+              $summary += "| Report | Size | Created |`n"
+              $summary += "|--------|------|---------|`n"
+              
+              foreach ($report in $reports | Select-Object -First 10) {
+                  $size = "{0:N0} KB" -f ($report.Length / 1KB)
+                  $created = $report.LastWriteTime.ToString("yyyy-MM-dd HH:mm:ss")
+                  $summary += "| $($report.Name) | $size | $created |`n"
+              }
+          }
+          
+          $summary += @"
+          
+          ---
+          
+          ### 📥 Download Reports
+          
+          Investigation reports are available as workflow artifacts (retention: 30 days).
+          
+          **Download:** Go to workflow run → Artifacts section → Download `investigation-reports-${{ github.run_number }}`
+          
+          ---
+          
+          ### 🔗 Resources
+          
+          - [Mossy Agent Documentation](.github/skills/ado-mossy-review/SKILL.md)
+          - [Cloud Deployment Guide](.github/skills/ado-mossy-review/CLOUD_DEPLOYMENT_GUIDE.md)
+          - [Azure DevOps Work Items](https://dev.azure.com/mosdata/MOS/_workitems)
+          
+          ---
+          
+          ✅ **Workflow Status:** ${{ job.status }}
+          
+"@
+          
+          # Write summary to GitHub Actions summary
+          $summary | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Encoding UTF8
+          
+          Write-Host "✓ Job summary created" -ForegroundColor Green
+      
+      # Step 9: Send notification on failure (optional)
+      - name: Send failure notification
+        if: failure()
+        shell: pwsh
+        run: |
+          Write-Host "⚠ Workflow failed - check logs for details" -ForegroundColor Red
+          
+          # Optional: Send email notification
+          # Requires setting up SMTP secrets or using a notification action

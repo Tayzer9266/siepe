@@ -1,0 +1,180 @@
+Reporting
+Price Exception Report
+Reactive reports
+Our position
+Vendor pricing 0 MoS
+Solvis THrid Party Accounting
+
+https://siepe.visualstudio.com/Siepe.Software/_wiki/wikis/Siepe%20Wiki/2281/Price-Exception-Not-Matching-MarkIT-ICE-or-ICE-OR-NULL-Marks
+
+sycamoore sent file to solvis for pricing
+
+Pricing
+Market >> Secmaster >> Sycamoore
+Bug
+
+Refresh - Mos -
+
+how do I find out when something in a table got updated if it doesn't have an updatedate/by column?
+core.dbo.vPositionPriceWeightingActive
+
+
+single report = ad hoc
+
+
+
+Market Price - Common issue due to timing of reports
+- LSAT - back up
+- ICE - 
+- solvas lsat price instead of Market
+Weight lower the higher priority / Criteria matters as well
+Weight if Asset type ABS and Loan
+Asset Type not ABS or Loan so weight is not used
+because it is a bond they used LSAT instead of Market price.
+
+
+
+Agenda #1
+--- I think they want you to investigate the ROOT CAUSE of the price mismatches - not just validate that they exist.
+-- Did someone manually override the price? 
+
+deal market value
+override 
+deal issue market value log
+
+what change that overrode price
+if no change what price sent
+
+job sending price to solvas
+table - staging
+mos to solvas
+
+citi > solvas
+mos > solvas pricing
+
+feeds
+
+Based on these notes, I think they want you to investigate the ROOT CAUSE of the price mismatches - not just validate that they exist.
+-- Did someone manually override the price?
+SELECT TOP 100 *
+FROM solvas_am.dbo.deal_issue_market_value_log
+WHERE issue_id IN (SELECT issue_id FROM Entity_Issue_view WHERE lx_identifier = 'LX204108')
+ORDER BY log_date DESC
+2. Check What Price Was Sent to Solvas
+-- Staging table - what did MOS send to Solvas?
+SELECT *
+FROM [Feeds].[solvas_am].[tPriceLoader]
+WHERE [LoanX ID] = 'LX204108'
+AND [Mark Date] = '2026-06-15'
+ORDER BY PriceLoaderID DESC
+
+→ This shows what MOS sent vs what Solvas has now
+
+3. Trace the Feed Pipeline
+Citi → Solvas: Direct pricing feed from Citi to Solvas
+MOS → Solvas: MOS sends prices to Solvas staging table
+Market → MOS: Vendor feeds (MarkIt/ICE/LSEG) to MOS Reference
+4. Determine the Root Cause:
+Override in Solvas? → Intentional, no fix needed
+Feed timing issue? → MOS sent old/stale price
+Price weighting config? → MOS using
+
+4. Determine the Root Cause:
+Override in Solvas? → Intentional, no fix needed
+Feed timing issue? → MOS sent old/stale price
+Price weighting config? → MOS using wrong vendor source
+Solvas hasn't synced? → Staging table has right price, but not applied
+Action Items:
+Run override log query to see if manual corrections were made
+Check tPriceLoader staging table to see what MOS sent
+Compare all 3 sources: MOS → Staging → Solvas
+Document where the discrepancy originated
+Bottom line: They want you to trace WHERE the 0.075 difference came from, not just confirm it exists.
+
+Agenda #2
+--- Find out the where the prices are coming from
+SELECT TOP (1000) [PriceLoaderID]
+      ,[RefDataSetID]
+      ,[Identifier]
+      ,[IdentifierType]
+      ,[Mark Date]
+      ,[End Date]
+      ,[Ask]
+      ,[Bid]
+      ,[Mid Calc]
+      ,[Offer]
+      ,[Close Bid]
+      ,[Close Offer]
+      ,[Evaluated Price]
+      ,[Depth]
+      ,[Entity Code]
+      ,[LoanX ID]
+  FROM [Feeds].[solvas_am].[tPriceLoader]
+  order by 1 desc
+
+
+  524896
+
+  select * from vRefDataSet where RefDatasetID = '524896'
+
+
+  pricing time log
+  report subscript
+
+
+--- Logs \\998s02.mos.siepe.local\Siepe\Data\Logs
+
+-- pReportSomething
+
+
+---- How to Clone a dashboard 
+
+Select * from core.Employee.tPerson where FirstName like 'tay'
+Select * from core.DynamicDashboard.vUserDashboardTabCurrent where PersonID =114
+ 
+Select * from core.Employee.tPerson where FirstName like 'Chandra'
+Select * from core.DynamicDashboard.vUserDashboardTabCurrent where PersonID =7
+
+Exec  core.DynamicDashboard.pUserDashboardTabClone
+	@DashboardID =  2
+	,@Source_PersonID = 114
+	,@Source_DashboardTabName = 'Pricing Integrity'
+	,@Destination_PersonID = 7
+	,@Destination_DashboardTabName = 'Pricing Integrity'--If NULL, will be named same as Source  
+	,@ForceReplaceFlag  = 1
+
+
+	EXEC [Dashboard].[pIntegrityMissingPrices] 
+	@RefDataSetDate = NULL,
+	@Login = NULL,
+	@CompanyID = 2
+
+
+
+--- Refresh
+
+Hi Team,
+Could you please push the updated Transactions & Balances data from 7/1 through current from MOS to the Aristotle environment/DW for the following funds?
+
+Pacific Life Insurance Company: IMD Bank Loans Portfolio – IMDBKLNS
+Pacific Life Insurance Company: PL APC Credit Opportunities Portfolio – PLCOP
+Aristotle Multi-Sector Bond CIF MOS – MSCIT
+
+Please let us know once the data has been pushed and is available in the Aristotle environment.
+
+Thanks
+Hassan
+
+RUN RS BELOW
+500002373 - No Changes
+
+500002376 - Update Params
+
+EXEC report.pPositionExtract  
+@RefDataSetDateStart = '7/1/2026'
+, @RefDataSetDateEnd = '7/28/2026'
+, @CompanyID = '#[CompanyID]'
+, @ExcludePortfolioID = '#[PortfolioExclusion]'
+, @IsPositionCashFlow = #[IsPositionCashflow]
+
+--------------------------------------------------------------

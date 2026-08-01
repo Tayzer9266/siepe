@@ -1,0 +1,189 @@
+# Mossy Git Repository - .gitignore
+
+# ============================================
+# SECURITY: Never commit sensitive data
+# ============================================
+
+# API Keys and Secrets
+*.key
+*.secret
+*apikey*
+*password*
+*credentials*
+
+# Environment Variables with Secrets
+.env
+.env.local
+.env.production
+
+# Azure Key Vault backups
+*.vault
+
+# ============================================
+# DATABASE OUTPUTS & INVESTIGATION FILES
+# ============================================
+
+# Output folder (investigation reports, logs, CSVs)
+Output/
+Investigation_*/
+Archive/*.csv
+Archive/*.json
+
+# Database query results
+*_QueryResults.csv
+*_DiagnosticResults.json
+*_ComparisonMatrix.csv
+*_PositionMarks.csv
+*RootCauseAnalysis*.md
+*Investigation*.md
+*Analysis*.md
+
+# Backup files
+*_backup_*.json
+*_backup_*.csv
+
+# ============================================
+# EXCEL & OFFICE FILES
+# ============================================
+
+# Excel temporary files
+~$*.xlsx
+~$*.xls
+*.tmp
+
+# Excel files with potentially sensitive client data
+# (Comment out if you want to version control templates)
+# *.xlsx
+# *.xls
+
+# ============================================
+# POWERSHELL & SCRIPT OUTPUTS
+# ============================================
+
+# PowerShell transcripts
+*_transcript_*.txt
+*_log_*.txt
+backfill-log-*.txt
+failed-jobs-report-*.csv
+
+# Script execution outputs
+*.out
+*.err
+
+# ============================================
+# VISUAL STUDIO CODE
+# ============================================
+
+.vscode/settings.json
+.vscode/launch.json
+.vscode/tasks.json
+.vscode/.ropeproject/
+
+# ============================================
+# WINDOWS
+# ============================================
+
+# Windows thumbnail cache
+Thumbs.db
+ehthumbs.db
+
+# Folder config file
+Desktop.ini
+
+# Recycle Bin
+$RECYCLE.BIN/
+
+# ============================================
+# EMAIL-TO-ADO WORKITEM (User-Specific Files)
+# ============================================
+
+# User email files
+**/email-to-ado-workitem/Inbox/*.msg
+**/email-to-ado-workitem/Inbox/*.eml
+**/email-to-ado-workitem/Archive/*.msg
+**/email-to-ado-workitem/Archive/*.eml
+**/email-to-ado-workitem/Error/*.msg
+**/email-to-ado-workitem/Error/*.eml
+
+# ============================================
+# PYTHON (if adding Python scripts)
+# ============================================
+
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+*.egg-info/
+
+# ============================================
+# NODE.JS (for PipeWatch web app)
+# ============================================
+
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# ============================================
+# BUILD OUTPUTS
+# ============================================
+
+bin/
+obj/
+*.dll
+*.exe
+*.pdb
+
+# ============================================
+# LOGS & TEMP FILES
+# ============================================
+
+*.log
+*.tmp
+*.temp
+*.bak
+*.swp
+*~
+
+# Seq log exports
+seq-export-*.json
+
+# ============================================
+# SPECIFIC TO MOSSY SKILLS
+# ============================================
+
+# Email extraction outputs (may contain sensitive emails)
+*EmailExtraction*.json
+*EmailAttachments/
+
+# Screenshot analysis (may contain sensitive screenshots)
+*Screenshots/
+*_screenshot_*.png
+
+# ADO webhook payloads (may contain sensitive ticket data)
+*webhook_payload*.json
+
+# PipeWatch backups
+*job-names-list*_backup_*.json
+
+# ============================================
+# KEEP THESE FILES (inverse patterns)
+# ============================================
+
+# Keep skill documentation
+!.github/skills/**/*.md
+!.github/skills/**/*.ps1
+!.github/skills/**/*.sql
+
+# Keep README files
+!README.md
+!**/README.md
+
+# Keep reference documentation
+!Reference/**/*.md
+
+# Keep skill YAML metadata
+!.github/skills/**/SKILL.md

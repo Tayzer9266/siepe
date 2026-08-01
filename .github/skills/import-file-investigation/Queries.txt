@@ -1,0 +1,114 @@
+---- SSIS MOS Log Status  
+
+SELECT 
+    'Feeds.SSIS' AS LogSource, 
+	ssis.RefDataSetID,
+    ssis.PackageName AS ProcessName,
+    'SSIS' AS ProcessType,
+    ssis.EventDate AS EventDate,
+    CASE 
+        WHEN ssis.EventType IN ('PackageEnd', 'OnPostExecute') AND ssis.EventCode = 0 THEN 'Success'
+        WHEN ssis.EventType IN ('OnError', 'PackageError') OR ssis.EventCode <> 0 THEN 'Failed'
+        WHEN ssis.EventType IN ('PackageStart', 'OnPreExecute') THEN 'Running'
+        ELSE 'Warning'
+    END AS Status,
+    COALESCE(ssis.PackageDuration, ssis.ContainerDuration) AS DurationSeconds,
+    ssis.InsertCount AS RecordsProcessed,
+    ssis.DeleteCount AS RecordsFailed,  -- DeleteCount may represent failed/rejected records
+    CASE WHEN ssis.EventCode <> 0 THEN 1 ELSE 0 END AS ErrorCount,
+    ssis.EventDescription AS ErrorMessage,
+    ssis.EventID AS SourceEventID
+FROM [Feeds].[dbo].[tSSISImportEventLog] ssis
+WHERE ssis.RefDataSetID IS NOT NULL
+and EventDate >= '2026-07-26'
+
+--- Active contract cash flow
+ 
+select*
+from core.dbo.vInstContractCashFlowActive t
+join core.dbo.vinstbyidentifier ii on ii.instid = t.instid 
+where ii.loanxid = 'LX235201' order by allinrate  desc
+
+--- Normalizing view
+
+select*
+from feeds.dbo.vnormalizationview
+where normalizationviewtype like '%inst%con%cash%'
+
+----- Report Subscription
+
+SELECT SourceFolder, FileName, *  --, FileExtension, ArchiveLocation
+FROM Feeds.dbo.vGenericImportJob 
+WHERE GenericImportJobID = 2136
+AND RefRecStatusID = 1
+
+SELECT GenericImportJobID, Name, SourceFolder, FileName
+FROM dbo.vGenericImportJob 
+WHERE RefRecStatusID = 1
+    AND (Name LIKE '%Sycamore%' OR SourceFolder LIKE '%Sycamore%')
+ORDER BY Name
+
+
+----- Get ref data set
+select top 100 * 
+from   feeds.dbo.vrefdataset order by createddate desc
+
+--- Solvas Process Status
+
+SELECT 
+    'Solvas.' + processed_by AS LogSource,
+    CASE processed_by
+        WHEN 'ASSET_LOADER' THEN 'Solvas Asset Loader'
+        WHEN 'TRADE_LOADER' THEN 'Solvas Trade Loader'
+        ELSE 'Solvas ' + processed_by
+    END AS ProcessName,
+    'Loader' AS ProcessType,
+    start_time AS EventDate,
+    CASE process_status
+        WHEN 'OK  ' THEN 'Success'
+        WHEN 'ERR ' THEN 'Failed'
+        WHEN 'VALD' THEN 'Success'
+        WHEN 'LOAD' THEN 'Running'
+        WHEN 'BEG ' THEN 'Running'
+        ELSE 'Warning'
+    END AS Status,
+    DATEDIFF(SECOND, start_time, end_time) AS DurationSeconds,
+    total_records_count AS RecordsProcessed,
+    CASE WHEN process_status = 'ERR ' THEN total_records_count ELSE 0 END AS RecordsFailed,
+    CASE WHEN process_status = 'ERR ' THEN 1 ELSE 0 END AS ErrorCount,
+    COALESCE(error_message, error_body) AS ErrorMessage,
+    process_id AS SourceEventID
+FROM  [Solvas_AM].[dbo].[Process_Log]
+WHERE --processed_by IN ('ASSET_LOADER', 'TRADE_LOADER')
+   --- AND 
+	start_time >= DATEADD(DAY, -7, GETDATE())  -- Last 7 days
+
+
+--- MOS Dashboard Report
+
+SELECT 
+    DashboardReportID,
+    DashboardID,
+    Title,
+    StatusProc,
+    RefRecStatusID,
+    CreatedDate,
+    CreatedUser
+FROM [Core].[Process].[tDashboardReport]
+WHERE LOWER(Title) LIKE LOWER('%Cashflow%')  -- Case-insensitive search
+  --AND RefRecStatusID = 1  -- Only active reports
+ORDER BY CreatedDate DESC;
+
+
+
+
+  --- MOS Process Results
+   Select * 
+   FROM CORE.[IRA].[tProcessResult] pr where createdDate = '2024-04-23 21:09:57.477'
+
+
+
+
+SELECT * 
+FROM Feeds.dbo.vGenericImportJob 
+WHERE RefRecStatusID = 1  -- Active jobs
