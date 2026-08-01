@@ -200,7 +200,7 @@ jobs:
           
           ### 📊 Investigation Reports Generated
           
-          "@ 
+"@
           
           if ($reports.Count -eq 0) {
               $summary += "`n**No investigation reports generated** (no tickets with 'Mossy Review' tag found)`n"
