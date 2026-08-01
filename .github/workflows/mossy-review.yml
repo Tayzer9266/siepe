@@ -15,6 +15,11 @@ name: Mossy Automated Review Agent
 # ============================================
 
 on:
+  # Triggered on push to main branch (for testing and immediate deployment)
+  push:
+    branches:
+      - main
+  
   # Scheduled execution - choose ONE of these (uncomment the one you want)
   schedule:
     # Every 6 hours
