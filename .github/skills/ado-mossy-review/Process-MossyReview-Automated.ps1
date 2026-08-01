@@ -42,8 +42,8 @@ Import-Module $modulePath -Force
 # CONFIGURATION
 # ============================================
 
-$ADO_ORG = "mosdata"
-$ADO_PROJECT = "MOS"
+$ADO_ORG = "siepe"  # Organization name (for siepe.visualstudio.com or dev.azure.com/siepe)
+$ADO_PROJECT = "Siepe.Software"
 $TAG_TO_PROCESS = "Mossy Review"
 $TAG_COMPLETE = "Mossy Review - Complete"
 

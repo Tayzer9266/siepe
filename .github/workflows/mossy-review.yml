@@ -88,11 +88,32 @@ jobs:
         run: |
           Write-Host "Authenticating with Azure DevOps..." -ForegroundColor Cyan
           
+          # Check if PAT is configured
+          if ([string]::IsNullOrWhiteSpace($env:AZURE_DEVOPS_PAT)) {
+              Write-Host "" -ForegroundColor Red
+              Write-Host "ERROR: AZURE_DEVOPS_PAT secret is not configured!" -ForegroundColor Red
+              Write-Host "" -ForegroundColor Yellow
+              Write-Host "To fix this:" -ForegroundColor Yellow
+              Write-Host "1. Go to: https://github.com/Tayzer9266/siepe/settings/secrets/actions" -ForegroundColor Cyan
+              Write-Host "2. Click 'New repository secret'" -ForegroundColor Cyan
+              Write-Host "3. Name: AZURE_DEVOPS_PAT" -ForegroundColor Cyan
+              Write-Host "4. Value: Your Azure DevOps Personal Access Token" -ForegroundColor Cyan
+              Write-Host "5. See: GITHUB_SECRETS_SETUP.md for detailed instructions" -ForegroundColor Cyan
+              Write-Host "" -ForegroundColor Yellow
+              exit 1
+          }
+          
           # Login using Personal Access Token
-          echo $env:AZURE_DEVOPS_PAT | az devops login --organization https://dev.azure.com/mosdata
+          echo $env:AZURE_DEVOPS_PAT | az devops login --organization https://siepe.visualstudio.com/
+          
+          if ($LASTEXITCODE -ne 0) {
+              Write-Host "Failed to authenticate with Azure DevOps" -ForegroundColor Red
+              Write-Host "Check that your AZURE_DEVOPS_PAT secret is valid" -ForegroundColor Yellow
+              exit 1
+          }
           
           # Set default organization and project
-          az devops configure --defaults organization=https://dev.azure.com/mosdata project=MOS
+          az devops configure --defaults organization=https://siepe.visualstudio.com/ project=Siepe.Software
           
           Write-Host "✓ Azure DevOps authenticated" -ForegroundColor Green
       

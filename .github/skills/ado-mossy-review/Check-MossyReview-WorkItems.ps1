@@ -74,11 +74,15 @@ try {
         
         # Determine if current sprint (basic check - sprint contains current date range)
         $isCurrentSprint = $false
-        if ($iteration -match '\d{2}\.\d{2}[ab]') {
+        if ($iteration -and $iteration.Length -ge 5 -and $iteration -match '\d{2}\.\d{2}[ab]') {
             # Format like "07.26b" - check if month matches
-            $sprintMonth = [int]$iteration.Substring($iteration.Length - 5, 2)
-            if ($sprintMonth -eq $today.Month) {
-                $isCurrentSprint = $true
+            try {
+                $sprintMonth = [int]$iteration.Substring($iteration.Length - 5, 2)
+                if ($sprintMonth -eq $today.Month) {
+                    $isCurrentSprint = $true
+                }
+            } catch {
+                # Ignore parsing errors for non-standard sprint names
             }
         }
         
