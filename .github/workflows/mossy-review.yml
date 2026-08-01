@@ -188,24 +188,19 @@ jobs:
           $reports = Get-ChildItem -Path "Output\AutomatedInvestigations\*.md" -ErrorAction SilentlyContinue | 
                      Sort-Object LastWriteTime -Descending
           
-          $summary = @"
-          ## 🤖 Mossy Automated Agent - Execution Summary
-          
-          **Run Time:** $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss UTC')  
-          **Workflow:** ${{ github.workflow }}  
-          **Run Number:** ${{ github.run_number }}  
-          **Trigger:** ${{ github.event_name }}
-          
-          ---
-          
-          ### 📊 Investigation Reports Generated
-          
-"@
+          # Build summary using string concatenation (avoids YAML parser issues with here-strings)
+          $summary = "## 🤖 Mossy Automated Agent - Execution Summary`n`n"
+          $summary += "**Run Time:** $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss UTC')`n"
+          $summary += "**Workflow:** ${{ github.workflow }}`n"
+          $summary += "**Run Number:** ${{ github.run_number }}`n"
+          $summary += "**Trigger:** ${{ github.event_name }}`n`n"
+          $summary += "---`n`n"
+          $summary += "### 📊 Investigation Reports Generated`n`n"
           
           if ($reports.Count -eq 0) {
-              $summary += "`n**No investigation reports generated** (no tickets with 'Mossy Review' tag found)`n"
+              $summary += "**No investigation reports generated** (no tickets with 'Mossy Review' tag found)`n"
           } else {
-              $summary += "`n**Total Reports:** $($reports.Count)`n`n"
+              $summary += "**Total Reports:** $($reports.Count)`n`n"
               $summary += "| Report | Size | Created |`n"
               $summary += "|--------|------|---------|`n"
               
@@ -216,29 +211,17 @@ jobs:
               }
           }
           
-          $summary += @"
-          
-          ---
-          
-          ### 📥 Download Reports
-          
-          Investigation reports are available as workflow artifacts (retention: 30 days).
-          
-          **Download:** Go to workflow run → Artifacts section → Download `investigation-reports-${{ github.run_number }}`
-          
-          ---
-          
-          ### 🔗 Resources
-          
-          - [Mossy Agent Documentation](.github/skills/ado-mossy-review/SKILL.md)
-          - [Cloud Deployment Guide](.github/skills/ado-mossy-review/CLOUD_DEPLOYMENT_GUIDE.md)
-          - [Azure DevOps Work Items](https://dev.azure.com/mosdata/MOS/_workitems)
-          
-          ---
-          
-          ✅ **Workflow Status:** ${{ job.status }}
-          
-"@
+          $summary += "`n---`n`n"
+          $summary += "### 📥 Download Reports`n`n"
+          $summary += "Investigation reports are available as workflow artifacts (retention: 30 days).`n`n"
+          $summary += "**Download:** Go to workflow run → Artifacts section → Download ``investigation-reports-${{ github.run_number }}```n`n"
+          $summary += "---`n`n"
+          $summary += "### 🔗 Resources`n`n"
+          $summary += "- [Mossy Agent Documentation](.github/skills/ado-mossy-review/SKILL.md)`n"
+          $summary += "- [Cloud Deployment Guide](.github/skills/ado-mossy-review/CLOUD_DEPLOYMENT_GUIDE.md)`n"
+          $summary += "- [Azure DevOps Work Items](https://dev.azure.com/mosdata/MOS/_workitems)`n`n"
+          $summary += "---`n`n"
+          $summary += "✅ **Workflow Status:** ${{ job.status }}`n"
           
           # Write summary to GitHub Actions summary
           $summary | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Encoding UTF8
