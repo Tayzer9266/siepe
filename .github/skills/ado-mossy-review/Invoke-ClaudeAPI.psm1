@@ -45,7 +45,7 @@ function Invoke-ClaudeAPI {
         [string]$SystemPrompt = "You are Mossy, an expert MOS back office database support agent. Analyze issues thoroughly and provide actionable investigation steps.",
 
         [Parameter(Mandatory=$false)]
-        [string]$Model = "claude-sonnet-4-20250514",
+        [string]$Model = "claude-3-5-sonnet-20240620",
 
         [Parameter(Mandatory=$false)]
         [int]$MaxTokens = 4096,
