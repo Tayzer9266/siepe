@@ -22,8 +22,8 @@ on:
   
   # Scheduled execution - choose ONE of these (uncomment the one you want)
   schedule:
-    # Every 10 minutes
-    - cron: '*/10 * * * *'
+    # Every 6 hours
+    - cron: '0 */6 * * *'
     
     # Or daily at 9 AM UTC (4 AM EST)
     # - cron: '0 9 * * *'
