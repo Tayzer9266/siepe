@@ -104,7 +104,8 @@ ORDER BY [System.ChangedDate] DESC
             query = $query
         } | ConvertTo-Json
 
-        $uri = "https://dev.azure.com/$ADO_ORG/$ADO_PROJECT/_apis/wit/wiql?api-version=7.0"
+        # Use visualstudio.com endpoint (dev.azure.com doesn't work with PAT Basic Auth)
+        $uri = "https://$ADO_ORG.visualstudio.com/$ADO_PROJECT/_apis/wit/wiql?api-version=7.0"
         
         # Use Invoke-RestMethod instead of Azure CLI to avoid Unicode encoding bugs
         $response = Invoke-RestMethod -Uri $uri -Method Post -Headers $headers -Body $wiql
@@ -119,7 +120,7 @@ ORDER BY [System.ChangedDate] DESC
         # Get full work item details
         $tickets = @()
         foreach ($item in $response.workItems) {
-            $ticketUri = "https://dev.azure.com/$ADO_ORG/$ADO_PROJECT/_apis/wit/workitems/$($item.id)?api-version=7.0"
+            $ticketUri = "https://$ADO_ORG.visualstudio.com/$ADO_PROJECT/_apis/wit/workitems/$($item.id)?api-version=7.0"
             $ticket = Invoke-RestMethod -Uri $ticketUri -Method Get -Headers $headers
             $tickets += $ticket
             
@@ -453,7 +454,7 @@ function Add-InvestigationToADO {
             text = $ReportContent
         } | ConvertTo-Json
 
-        $commentUri = "https://dev.azure.com/$ADO_ORG/$ADO_PROJECT/_apis/wit/workItems/$ticketId/comments?api-version=7.0"
+        $commentUri = "https://$ADO_ORG.visualstudio.com/$ADO_PROJECT/_apis/wit/workItems/$ticketId/comments?api-version=7.0"
         
         # Use Invoke-RestMethod instead of Azure CLI to avoid Unicode encoding bugs
         $headers["Content-Type"] = "application/json"
@@ -473,7 +474,7 @@ function Add-InvestigationToADO {
             }
         ) | ConvertTo-Json
 
-        $updateUri = "https://dev.azure.com/$ADO_ORG/$ADO_PROJECT/_apis/wit/workitems/$ticketId?api-version=7.0"
+        $updateUri = "https://$ADO_ORG.visualstudio.com/$ADO_PROJECT/_apis/wit/workitems/$ticketId?api-version=7.0"
         
         # Use Invoke-RestMethod with JSON Patch content type
         $headers["Content-Type"] = "application/json-patch+json"
