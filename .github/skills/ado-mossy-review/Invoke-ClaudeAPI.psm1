@@ -45,7 +45,7 @@ function Invoke-ClaudeAPI {
         [string]$SystemPrompt = "You are Mossy, an expert MOS back office database support agent. Analyze issues thoroughly and provide actionable investigation steps.",
 
         [Parameter(Mandatory=$false)]
-        [string]$Model = "claude-3-5-sonnet-20240620",
+        [string]$Model = "claude-opus-5",
 
         [Parameter(Mandatory=$false)]
         [int]$MaxTokens = 4096,
@@ -101,8 +101,24 @@ function Invoke-ClaudeAPI {
             -Body $jsonBody `
             -ErrorAction Stop
 
-        # Extract text response
-        $textResponse = $response.content[0].text
+        # Extract text response (handle different response formats)
+        # Claude Opus 5 returns thinking + text blocks, need to find the text one
+        if ($response.content -and $response.content.Count -gt 0) {
+            # Find the first "text" type content block
+            $textContent = $response.content | Where-Object { $_.type -eq "text" } | Select-Object -First 1
+            if ($textContent) {
+                $textResponse = $textContent.text
+            } else {
+                # Fallback to first item if it has text property
+                $textResponse = $response.content[0].text
+            }
+        } elseif ($response.completion) {
+            # Legacy format
+            $textResponse = $response.completion
+        } else {
+            Write-Error "Unexpected response format. Response keys: $($response.PSObject.Properties.Name -join ', ')"
+            throw "Unable to parse Claude API response"
+        }
 
         Write-Verbose "Response received: $($textResponse.Length) characters"
 

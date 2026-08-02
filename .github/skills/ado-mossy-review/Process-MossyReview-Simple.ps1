@@ -85,8 +85,7 @@ Keep it concise (max 500 words).
     Write-Host "Analyzing with Claude..." -ForegroundColor Cyan
     
     try {
-        $response = Invoke-ClaudeAPI -Prompt $prompt -MaxTokens 2000 -APIKey $APIKey
-        $report = $response.content[0].text
+        $report = Invoke-ClaudeAPI -Prompt $prompt -MaxTokens 2000 -APIKey $APIKey
         
         Write-Host "Generated $($report.Length) character report" -ForegroundColor Green
         
