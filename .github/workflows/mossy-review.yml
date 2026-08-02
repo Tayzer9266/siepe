@@ -145,10 +145,10 @@ jobs:
       - name: Process Mossy Review tickets
         shell: pwsh
         env:
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY_BU }}
         run: |
           Write-Host "════════════════════════════════════════════════════════════════" -ForegroundColor Magenta
-          Write-Host "  Starting Mossy Automated Agent" -ForegroundColor Magenta
+          Write-Host "  Starting Mossy Automated Agent (using backup API key)" -ForegroundColor Magenta
           Write-Host "════════════════════════════════════════════════════════════════" -ForegroundColor Magenta
           
           # Navigate to script directory
