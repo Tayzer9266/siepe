@@ -94,7 +94,8 @@ ORDER BY [System.ChangedDate] DESC
 
         $uri = "https://dev.azure.com/$ADO_ORG/$ADO_PROJECT/_apis/wit/wiql?api-version=7.0"
         
-        $response = az rest --uri $uri --method POST --body $wiql --headers "Content-Type=application/json" | ConvertFrom-Json
+        # Redirect stderr to suppress Azure CLI Unicode encoding errors
+        $response = az rest --uri $uri --method POST --body $wiql --headers "Content-Type=application/json" 2>$null | ConvertFrom-Json
 
         if ($response.workItems.Count -eq 0) {
             Write-Host "✓ No tickets found with tag '$TAG_TO_PROCESS'" -ForegroundColor Green
@@ -107,7 +108,8 @@ ORDER BY [System.ChangedDate] DESC
         $tickets = @()
         foreach ($item in $response.workItems) {
             $ticketUri = "https://dev.azure.com/$ADO_ORG/$ADO_PROJECT/_apis/wit/workitems/$($item.id)?api-version=7.0"
-            $ticket = az rest --uri $ticketUri | ConvertFrom-Json
+            # Redirect stderr to suppress Azure CLI Unicode encoding errors
+            $ticket = az rest --uri $ticketUri 2>$null | ConvertFrom-Json
             $tickets += $ticket
             
             Write-Host "  - #$($ticket.id): $($ticket.fields.'System.Title')" -ForegroundColor White
