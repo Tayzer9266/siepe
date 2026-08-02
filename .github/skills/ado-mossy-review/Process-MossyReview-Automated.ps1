@@ -88,14 +88,26 @@ ORDER BY [System.ChangedDate] DESC
 "@
 
     try {
+        # Get PAT token and create auth headers (BYPASS Azure CLI Unicode bug!)
+        $pat = $env:AZURE_DEVOPS_PAT
+        if (-not $pat) {
+            throw "AZURE_DEVOPS_PAT environment variable not set"
+        }
+        
+        $base64AuthInfo = [Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes(":$pat"))
+        $headers = @{
+            Authorization = "Basic $base64AuthInfo"
+            "Content-Type" = "application/json"
+        }
+
         $wiql = @{
             query = $query
         } | ConvertTo-Json
 
         $uri = "https://dev.azure.com/$ADO_ORG/$ADO_PROJECT/_apis/wit/wiql?api-version=7.0"
         
-        # Redirect stderr to suppress Azure CLI Unicode encoding errors
-        $response = az rest --uri $uri --method POST --body $wiql --headers "Content-Type=application/json" 2>$null | ConvertFrom-Json
+        # Use Invoke-RestMethod instead of Azure CLI to avoid Unicode encoding bugs
+        $response = Invoke-RestMethod -Uri $uri -Method Post -Headers $headers -Body $wiql
 
         if ($response.workItems.Count -eq 0) {
             Write-Host "✓ No tickets found with tag '$TAG_TO_PROCESS'" -ForegroundColor Green
@@ -108,8 +120,7 @@ ORDER BY [System.ChangedDate] DESC
         $tickets = @()
         foreach ($item in $response.workItems) {
             $ticketUri = "https://dev.azure.com/$ADO_ORG/$ADO_PROJECT/_apis/wit/workitems/$($item.id)?api-version=7.0"
-            # Redirect stderr to suppress Azure CLI Unicode encoding errors
-            $ticket = az rest --uri $ticketUri 2>$null | ConvertFrom-Json
+            $ticket = Invoke-RestMethod -Uri $ticketUri -Method Get -Headers $headers
             $tickets += $ticket
             
             Write-Host "  - #$($ticket.id): $($ticket.fields.'System.Title')" -ForegroundColor White
@@ -426,6 +437,17 @@ function Add-InvestigationToADO {
     }
 
     try {
+        # Get PAT token and create auth headers (BYPASS Azure CLI Unicode bug!)
+        $pat = $env:AZURE_DEVOPS_PAT
+        if (-not $pat) {
+            throw "AZURE_DEVOPS_PAT environment variable not set"
+        }
+        
+        $base64AuthInfo = [Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes(":$pat"))
+        $headers = @{
+            Authorization = "Basic $base64AuthInfo"
+        }
+        
         # Add comment to work item
         $commentBody = @{
             text = $ReportContent
@@ -433,7 +455,9 @@ function Add-InvestigationToADO {
 
         $commentUri = "https://dev.azure.com/$ADO_ORG/$ADO_PROJECT/_apis/wit/workItems/$ticketId/comments?api-version=7.0"
         
-        az rest --uri $commentUri --method POST --body $commentBody --headers "Content-Type=application/json" | Out-Null
+        # Use Invoke-RestMethod instead of Azure CLI to avoid Unicode encoding bugs
+        $headers["Content-Type"] = "application/json"
+        Invoke-RestMethod -Uri $commentUri -Method Post -Headers $headers -Body $commentBody | Out-Null
 
         Write-Host "✓ Posted investigation report to ticket #$ticketId" -ForegroundColor Green
 
@@ -451,7 +475,9 @@ function Add-InvestigationToADO {
 
         $updateUri = "https://dev.azure.com/$ADO_ORG/$ADO_PROJECT/_apis/wit/workitems/$ticketId?api-version=7.0"
         
-        az rest --uri $updateUri --method PATCH --body $updateBody --headers "Content-Type=application/json-patch+json" | Out-Null
+        # Use Invoke-RestMethod with JSON Patch content type
+        $headers["Content-Type"] = "application/json-patch+json"
+        Invoke-RestMethod -Uri $updateUri -Method Patch -Headers $headers -Body $updateBody | Out-Null
 
         Write-Host "✓ Updated tags: '$TAG_TO_PROCESS' → '$TAG_COMPLETE'" -ForegroundColor Green
     }
