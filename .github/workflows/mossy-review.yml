@@ -93,7 +93,7 @@ jobs:
       - name: Login to Azure DevOps
         shell: pwsh
         env:
-          AZURE_DEVOPS_PAT: ${{ secrets.AZURE_DEVOPTS_PAT }}
+          AZURE_DEVOPS_PAT: ${{ secrets.AZURE_DEVOPS_PAT }}
         run: |
           Write-Host "Authenticating with Azure DevOps..." -ForegroundColor Cyan
           
