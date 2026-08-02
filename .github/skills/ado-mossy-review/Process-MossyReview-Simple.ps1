@@ -34,7 +34,7 @@ Write-Host "Max: $MaxTickets tickets`n" -ForegroundColor Gray
 # STEP 1: Query for tickets
 Write-Host "[1/3] Querying for tickets..." -ForegroundColor Yellow
 
-$query = "SELECT [System.Id], [System.Title], [System.Tags] FROM workitems WHERE [System.TeamProject] = '$ADO_PROJECT' AND [System.Tags] CONTAINS '$TAG_TO_PROCESS' AND [System.State] <> 'Closed'"
+$query = "SELECT [System.Id], [System.Title], [System.Tags] FROM workitems WHERE [System.TeamProject] = '$ADO_PROJECT' AND [System.Tags] CONTAINS '$TAG_TO_PROCESS' AND [System.Tags] NOT CONTAINS '$TAG_COMPLETE' AND [System.State] <> 'Closed'"
 
 try {
     $tickets = az boards query --wiql $query --org https://$ADO_ORG.visualstudio.com --output json | ConvertFrom-Json
