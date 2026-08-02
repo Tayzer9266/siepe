@@ -27,14 +27,14 @@
 .PARAMETER APIKey
     Anthropic API key (if not provided, reads from environment variable)
 
-.EXAMPLE
+.EXAMPLE"C:\Users\tcnguyen\Desktop\secret_key.txt"
     $response = Invoke-ClaudeAPI -Prompt "Analyze this SQL error: timeout"
     Write-Host $response
 
 .EXAMPLE
     $response = Invoke-ClaudeAPI -Prompt "Investigate ticket" -SystemPrompt "You are a SQL database expert"
 #>
-
+"C:\Users\tcnguyen\Desktop\secret_key.txt"
 function Invoke-ClaudeAPI {
     [CmdletBinding()]
     param(
@@ -45,7 +45,7 @@ function Invoke-ClaudeAPI {
         [string]$SystemPrompt = "You are Mossy, an expert MOS back office database support agent. Analyze issues thoroughly and provide actionable investigation steps.",
 
         [Parameter(Mandatory=$false)]
-        [string]$Model = "claude-sonnet-4-20250514",
+        [string]$Model = "claude-3-5-sonnet-20241022",
 
         [Parameter(Mandatory=$false)]
         [int]$MaxTokens = 4096,
