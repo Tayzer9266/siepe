@@ -38,6 +38,9 @@ param(
 $modulePath = Join-Path $PSScriptRoot "Invoke-ClaudeAPI.psm1"
 Import-Module $modulePath -Force
 
+# FIX: Azure CLI Unicode encoding bug (prevents ∞ symbol crash)
+$OutputEncoding = [Console]::OutputEncoding = [System.Text.UTF8Encoding]::new()
+
 # ============================================
 # CONFIGURATION
 # ============================================
