@@ -48,6 +48,11 @@ jobs:
     name: Process Mossy Review Tickets
     runs-on: windows-latest  # Use Windows runner for native PowerShell
     
+    # Force UTF-8 encoding for Python/Azure CLI to prevent Unicode errors
+    env:
+      PYTHONUTF8: 1
+      PYTHONIOENCODING: utf-8
+    
     steps:
       # Step 1: Checkout code from repository
       - name: Checkout repository
