@@ -109,15 +109,26 @@ function Invoke-ClaudeAPI {
         return $textResponse
     }
     catch {
-        Write-Error "Claude API call failed: $($_.Exception.Message)"
+        Write-Host "════════════════════════════════════════" -ForegroundColor Red
+        Write-Host "CLAUDE API ERROR DETAILS" -ForegroundColor Red
+        Write-Host "════════════════════════════════════════" -ForegroundColor Red
+        Write-Host "Error: $($_.Exception.Message)" -ForegroundColor Yellow
+        Write-Host "Status Code: $($_.Exception.Response.StatusCode.value__)" -ForegroundColor Yellow
         
         # Try to extract more details from response
         if ($_.ErrorDetails.Message) {
+            Write-Host "Error Details:" -ForegroundColor Yellow
+            Write-Host $_.ErrorDetails.Message -ForegroundColor Gray
+            
             $errorDetails = $_.ErrorDetails.Message | ConvertFrom-Json -ErrorAction SilentlyContinue
             if ($errorDetails.error) {
-                Write-Error "API Error: $($errorDetails.error.type) - $($errorDetails.error.message)"
+                Write-Host "Type: $($errorDetails.error.type)" -ForegroundColor Cyan
+                Write-Host "Message: $($errorDetails.error.message)" -ForegroundColor Cyan
             }
         }
+        Write-Host "════════════════════════════════════════" -ForegroundColor Red
+        
+        Write-Error "Claude API call failed: $($_.Exception.Message)"
         
         throw
     }

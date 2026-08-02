@@ -178,3 +178,8 @@ EXEC report.pPositionExtract
 , @IsPositionCashFlow = #[IsPositionCashflow]
 
 --------------------------------------------------------------
+
+
+Things to do-------------------------
+
+mos ca excel refresh location wasn't clearly stated copies of copies need a skill to check locations

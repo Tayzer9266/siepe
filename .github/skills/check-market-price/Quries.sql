@@ -13,6 +13,8 @@
 -- Use Case: Confirm if prices were applied to positions after correction
 
 -- Check position mark on active position
+ 
+
 SELECT DISTINCT 
     p.refdatasetdate,
 	p.Portfolio, 
@@ -22,30 +24,17 @@ SELECT DISTINCT
     p.EffFromDate
 FROM core.dbo.vposition p 
 JOIN core.dbo.vinstidentifiercurrent ii ON ii.instid = p.instid
-WHERE p.refdatasetdate = '2026-07-22 00:00:00.000'  -- Replace with target date
-    AND p.Portfolio LIKE '%sy%'                      -- Replace with portfolio pattern
-    AND ii.value = 'LX293810'                       -- Replace with CUSIP/ISIN/LoanX ID
-ORDER BY   p.refdatasetdate, ii.value, p.Portfolio;
-
-SELECT DISTINCT 
-    cpm.CompanyID,
-    c.Name AS CompanyName,
-    p.refdatasetdate,
-    p.Portfolio, 
-    PositionMark, 
-    ii.value AS Identifier,
-    p.Tradedqty, 
-    p.EffFromDate
-FROM core.dbo.vposition p 
-JOIN core.dbo.vinstidentifiercurrent ii ON ii.instid = p.instid
 LEFT JOIN core.dbo.tCompanyPortfolioMap cpm ON cpm.PortfolioID = p.PortfolioID 
     AND cpm.EffFromDate <= p.refdatasetdate 
     AND cpm.EffThruDate > p.refdatasetdate
-LEFT JOIN core.Employee.tCompany c ON c.CompanyID = cpm.CompanyID
-WHERE p.refdatasetdate = '2026-07-28 00:00:00.000'  -- Replace with target date
-   -- AND p.Portfolio LIKE '%Ari%'                      -- Replace with portfolio pattern
-    AND ii.value = 'LX293801'   and cpm.CompanyID = '500000006'       --- aristotle                 -- Replace with CUSIP/ISIN/LoanX ID
-ORDER BY cpm.CompanyID, p.refdatasetdate, ii.value, p.Portfolio 
+WHERE p.refdatasetdate >= '2026-07-22 00:00:00.000'  -- Replace with target date
+  -- AND p.Portfolio LIKE '%Sy%'                      -- Replace with portfolio pattern
+    AND ii.value = 'LX293801'                       -- Replace with CUSIP/ISIN/LoanX ID
+	  and cpm.CompanyID = '500000006'   
+ORDER BY   p.refdatasetdate, ii.value, p.Portfolio;
+
+
+ 
 
 -- ================================================================
 -- SECTION 2: CHECK VENDOR PRICES (REFERENCE DATABASE)
