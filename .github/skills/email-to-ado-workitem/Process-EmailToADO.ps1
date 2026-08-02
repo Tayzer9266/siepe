@@ -181,55 +181,34 @@ function Find-CurrentSprintBAUUserStory {
     
     Write-Host "Finding current sprint's BAU Support User Story under Feature #$FeatureId..." -ForegroundColor Cyan
     
-    # Query for child user stories
-    $wiql = @"
-SELECT [System.Id], [System.Title], [System.State], [System.IterationPath]
-FROM WorkItemLinks
-WHERE (
-    [Source].[System.Id] = $FeatureId
-    AND [System.Links.LinkType] = 'System.LinkTypes.Hierarchy-Forward'
-    AND [Target].[System.WorkItemType] = 'User Story'
-    AND [Target].[System.Title] CONTAINS 'CAMOS BAU Support'
-)
-ORDER BY [Target].[System.IterationPath] DESC
-MODE (MustContain)
-"@
+    # Simplified query - just search for User Stories with "CAMOS BAU Support" in title
+    $wiql = "SELECT [System.Id], [System.Title], [System.State], [System.IterationPath] FROM WorkItems WHERE [System.WorkItemType] = 'User Story' AND [System.Title] CONTAINS 'CAMOS BAU Support' AND [System.State] <> 'Closed' ORDER BY [System.ChangedDate] DESC"
     
     try {
-        # Save WIQL to temp file
-        $wiqlFile = "$env:TEMP\bau_query.wiql"
-        $wiql | Out-File -FilePath $wiqlFile -Encoding UTF8
-        
         # Execute query
         $results = az boards query --wiql $wiql --org $AdoOrg --project $AdoProject --output json | ConvertFrom-Json
         
         # Filter for Active or In Progress
-        $activeStories = $results | Where-Object { 
-            $_.'System.Title' -match 'CAMOS BAU Support' -and 
-            ($_.'System.State' -eq 'Active' -or $_.'System.State' -in @('Active', 'In Progress', 'New'))
-        } | Sort-Object -Property 'System.IterationPath' -Descending
+        if ($results -and $results.Count -gt 0) {
+            $activeStories = $results | Where-Object { 
+                $_.fields.'System.State' -in @('Active', 'In Progress', 'New')
+            } | Sort-Object -Property {$_.fields.'System.IterationPath'} -Descending
         
-        if ($activeStories -and $activeStories.Count -gt 0) {
-            $selected = $activeStories[0]
-            Write-Host "  Found: #$($selected.'System.Id') - $($selected.'System.Title')" -ForegroundColor Green
-            return $selected.'System.Id'
-        }
-        
-        # If no active stories, try just searching by title
-        Write-Warning "No active BAU Support stories found. Searching all states..."
-        
-        $allResults = az boards work-item query --query "SELECT [System.Id], [System.Title] FROM WorkItems WHERE [System.Parent] = $FeatureId AND [System.Title] CONTAINS 'CAMOS BAU Support' ORDER BY [System.ChangedDate] DESC" --org $AdoOrg --project $AdoProject --output json | ConvertFrom-Json
-        
-        if ($allResults -and $allResults.Count -gt 0) {
-            $selected = $allResults[0]
-            Write-Host "  Found (any state): #$($selected.'System.Id') - $($selected.'System.Title')" -ForegroundColor Yellow
-            return $selected.'System.Id'
+            if ($activeStories -and $activeStories.Count -gt 0) {
+                $selected = $activeStories[0]
+                Write-Host "  Found: #$($selected.id) - $($selected.fields.'System.Title')" -ForegroundColor Green
+                return $selected.id
+            } else {
+                Write-Warning "No active BAU Support stories found."
+                throw "Could not find current sprint's 'CAMOS BAU Support' User Story"
+            }
+        } else {
+            throw "No work items found matching 'CAMOS BAU Support'"
         }
     } catch {
         Write-Error "Failed to query for BAU Support User Story: $_"
+        throw
     }
-    
-    throw "Could not find current sprint's 'CAMOS BAU Support' User Story under Feature #$FeatureId"
 }
 
 function Read-EmailFile {
