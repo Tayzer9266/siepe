@@ -94,13 +94,13 @@ jobs:
           
           Write-Host "✓ Azure CLI installed successfully" -ForegroundColor Green
       
-      # Step 4: Verify Azure DevOps PAT is configured
-      - name: Verify Azure DevOps PAT
+      # Step 4: Login to Azure DevOps
+      - name: Login to Azure DevOps
         shell: pwsh
         env:
           AZURE_DEVOPS_PAT: ${{ secrets.AZURE_DEVOPS_PAT }}
         run: |
-          Write-Host "Verifying Azure DevOps PAT..." -ForegroundColor Cyan
+          Write-Host "Authenticating with Azure DevOps..." -ForegroundColor Cyan
           
           # Check if PAT is configured
           if ([string]::IsNullOrWhiteSpace($env:AZURE_DEVOPS_PAT)) {
@@ -117,8 +117,19 @@ jobs:
               exit 1
           }
           
-          # No login needed - we use Invoke-RestMethod with PAT in headers!
-          Write-Host "✓ PAT configured - using Invoke-RestMethod (no Azure CLI login needed)" -ForegroundColor Green
+          # Login using Personal Access Token
+          echo $env:AZURE_DEVOPS_PAT | az devops login --organization https://siepe.visualstudio.com/
+          
+          if ($LASTEXITCODE -ne 0) {
+              Write-Host "Failed to authenticate with Azure DevOps" -ForegroundColor Red
+              Write-Host "Check that your AZURE_DEVOPS_PAT secret is valid" -ForegroundColor Yellow
+              exit 1
+          }
+          
+          # Set default organization and project
+          az devops configure --defaults organization=https://siepe.visualstudio.com/ project=Siepe.Software
+          
+          Write-Host "✓ Azure DevOps authenticated" -ForegroundColor Green
       
       # Step 5: Create output directory
       - name: Setup output directory
@@ -160,11 +171,11 @@ jobs:
           Write-Host "  Dry Run: $dryRun" -ForegroundColor White
           Write-Host ""
           
-          # Run automation script
+          # Run automation script (simple version - no encoding issues!)
           if ($dryRun) {
-              .\Process-MossyReview-Automated.ps1 -MaxTicketsToProcess $maxTickets -DryRun
+              .\Process-MossyReview-Simple.ps1 -MaxTickets $maxTickets -DryRun
           } else {
-              .\Process-MossyReview-Automated.ps1 -MaxTicketsToProcess $maxTickets
+              .\Process-MossyReview-Simple.ps1 -MaxTickets $maxTickets
           }
           
           Write-Host ""
