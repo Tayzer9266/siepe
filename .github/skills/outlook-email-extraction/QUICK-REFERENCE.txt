@@ -1,0 +1,189 @@
+┌─────────────────────────────────────────────────────────────────────┐
+│                                                                     │
+│           OUTLOOK EMAIL PROCESSING - QUICK REFERENCE                │
+│                         v2.2 (2026-08-02)                           │
+│                                                                     │
+└─────────────────────────────────────────────────────────────────────┘
+
+═══════════════════════════════════════════════════════════════════════
+  📥 FIRST TIME SETUP (Do Once)
+═══════════════════════════════════════════════════════════════════════
+
+  1. Extract skill package to:
+     C:\source\MD\AdminTools\.github\skills\outlook-email-extraction\
+
+  2. Right-click → Run as Administrator:
+     Install-Dependencies.bat
+     
+     ⏱ Takes ~5 minutes
+     ✅ Installs Azure CLI, ADO extension, PowerShell modules
+
+  3. Login when prompted (browser opens)
+     ✅ Azure account
+     ✅ Microsoft Graph consent
+
+═══════════════════════════════════════════════════════════════════════
+  🚀 REGULAR USE (Anytime - DRAG AND DROP)
+═══════════════════════════════════════════════════════════════════════
+
+  1. Create a folder ANYWHERE you want:
+     Desktop, Downloads, Documents, etc.
+
+  2. Save email as .eml file:
+     Outlook → File → Save As → .eml format
+
+  3. Drop .eml files into your folder
+
+  4. Invoke via your AI assistant WITH FOLDER PATH:
+     
+     Claude Desktop:
+     "process the emails from C:\Users\YourName\Desktop\email-folder"
+     
+     GitHub Copilot:
+     "@workspace process the emails from C:\Users\YourName\Desktop\email-folder"
+     
+     Replace "YourName" and "email-folder" with your actual paths
+
+  5. Wait for automation:
+     ✅ Email parsed
+     ✅ Screenshots analyzed
+     ✅ Issue investigated
+     ✅ Time estimated
+     ✅ ADO work item created
+     ✅ Assigned to you
+     ✅ Email archived (Archive\ subfolder auto-created)
+
+═══════════════════════════════════════════════════════════════════════
+  📁 FOLDER STRUCTURE (DRAG AND DROP - YOU CHOOSE!)
+═══════════════════════════════════════════════════════════════════════
+
+  Create folder ANYWHERE:
+  C:\Users\YourName\Desktop\email-to-ado\       ← Your chosen location
+  C:\Users\YourName\Desktop\email-to-ado\Archive\ ← Auto-created
+
+  Example locations:
+  - Desktop: C:\Users\YourName\Desktop\emails\
+  - Downloads: C:\Users\YourName\Downloads\support-emails\
+  - Documents: C:\Users\YourName\Documents\work-items\
+  - Anywhere you want!
+
+═══════════════════════════════════════════════════════════════════════
+  🎯 WHAT IT DOES
+═══════════════════════════════════════════════════════════════════════
+
+  1. Setup folders           (if not exist)
+  2. Parse email             (sender, subject, body, attachments)
+  3. Analyze screenshots     (AI vision extraction)
+  4. Investigate issue       (database queries, log analysis)
+  5. Classify type           (Bug or Task)
+  6. Estimate time           (2h simple, 4h moderate, 8h complex)
+  7. Create ADO work item    (with all context)
+  8. Assign to you           (auto-detected from $env:USERNAME)
+  9. Archive email           (moves to Archive folder)
+
+═══════════════════════════════════════════════════════════════════════
+  🔍 EMAIL TO USER STORY MAPPING
+═══════════════════════════════════════════════════════════════════════
+
+  Keywords in Email → User Story Assigned
+  ─────────────────────────────────────────────────────────────────────
+  price, vendor, MarkIt, ICE, LSEG      → #85755 Pricing Issues
+  balance, cash, reconciliation         → #85756 Cash Reconciliation
+  Solvas, normalization, seniority      → #85757 Data Normalization
+  new fund, portfolio setup             → #85758 Portfolio Setup
+  duplicate, missing identifier         → #85759 Data Quality
+  slow query, timeout, performance      → #85760 Performance
+  SSIS, package failure, ETL            → #85761 SSIS Errors
+  import file, vendor file              → #85762 Import Files
+  (no match)                            → #85799 General MOS Support
+
+═══════════════════════════════════════════════════════════════════════
+  🐛 BUG vs TASK CLASSIFICATION
+═══════════════════════════════════════════════════════════════════════
+
+  Creates BUG when:
+  - Keywords: broken, error, failing, incorrect, blank, missing
+  - Screenshots show: error messages, blank fields, discrepancies
+  - Investigation finds: data corruption, system failures
+
+  Creates TASK when:
+  - Keywords: setup, configure, new fund, enhancement
+  - Work involves: configuration, new features, investigations
+
+═══════════════════════════════════════════════════════════════════════
+  ⏱ TIME ESTIMATES
+═══════════════════════════════════════════════════════════════════════
+
+  2 hours  - Simple fixes, single system, clear root cause
+  4 hours  - Moderate complexity, multiple data sources
+  8 hours  - Complex investigation, many systems, unclear cause
+
+═══════════════════════════════════════════════════════════════════════
+  🆘 TROUBLESHOOTING
+═══════════════════════════════════════════════════════════════════════
+
+  "No emails found"
+  → Put .eml files in C:\source\Outlook\emails\ (not Archive)
+
+  "Azure CLI not found"
+  → Re-run Install-Dependencies.bat as Administrator
+
+  "@Mossy not found"
+  → Copy AGENTS.md to .github/agents/ and restart VS Code
+
+  "Can't create work item"
+  → Check: az devops project show --project Siepe.Software
+
+  "Can't access emails"
+  → Run: Connect-MgGraph -Scopes Mail.Read
+
+═══════════════════════════════════════════════════════════════════════
+  🔑 COMMANDS REFERENCE
+═══════════════════════════════════════════════════════════════════════
+
+  Check Azure login:
+  az account show
+
+  Check ADO config:
+  az devops configure --list
+
+  Test ADO access:
+  az devops project show --project Siepe.Software
+
+  Re-login Azure:
+  az login
+
+  Check email access:
+  Connect-MgGraph -Scopes Mail.Read
+
+  View processed emails:
+  Get-ChildItem C:\source\Outlook\emails\Archive\
+
+═══════════════════════════════════════════════════════════════════════
+  📞 SUPPORT
+═══════════════════════════════════════════════════════════════════════
+
+  Contact: Tay Nguyen (tcnguyen@siepe.com)
+  Docs: README-DISTRIBUTION.md (complete guide)
+  Skill: C:\source\MD\AdminTools\.github\skills\outlook-email-extraction\
+
+═══════════════════════════════════════════════════════════════════════
+  📝 VERSION
+═══════════════════════════════════════════════════════════════════════
+
+  Current: v2.2 (2026-08-02)
+  
+  Features:
+  ✅ Auto-folder creation
+  ✅ Time estimation
+  ✅ Auto-assignment
+  ✅ Bug/Task classification
+  ✅ Screenshot AI analysis
+  ✅ Database investigations
+  ✅ Auto-archival
+
+═══════════════════════════════════════════════════════════════════════
+
+💡 TIP: Print this card and keep it at your desk!
+
+═══════════════════════════════════════════════════════════════════════

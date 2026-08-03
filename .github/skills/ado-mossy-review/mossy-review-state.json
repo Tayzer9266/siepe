@@ -1,0 +1,23 @@
+﻿{
+    "System.Object[]":  {
+                            "Sprint":  "07.26b",
+                            "Title":  [
+                                          "RE: US Diameter Trade Validation - Secondary Sale XEROX (11/23) 1st",
+                                          "RE: Aristotle Price Recon Report",
+                                          "Reconciliation of Price Data",
+                                          "Initial Research and Review."
+                                      ],
+                            "Type":  [
+                                         "Task",
+                                         "Task",
+                                         "Task",
+                                         "Task"
+                                     ],
+                            "State":  [
+                                          "New",
+                                          "New",
+                                          "In Progress",
+                                          "In Progress"
+                                      ]
+                        }
+}

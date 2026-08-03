@@ -10,12 +10,12 @@ param(
     [string]$Organization = "https://siepe.visualstudio.com/",
     [string]$Project = "Siepe.Software",
     [switch]$LogToFile,
-    [string]$LogPath = "C:\source\MD\AdminTools\Output\mossy-review-processor.log",
+    [string]$LogPath = "C:\source\MD\AdminTools\.github\skills\ado-mossy-review\mossy-review-processor.log",
     [int]$MaxConcurrentReviews = 2
 )
 
 $timestamp = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
-$queueFile = "C:\source\MD\AdminTools\Output\mossy-review-queue.json"
+$queueFile = "C:\source\MD\AdminTools\.github\skills\ado-mossy-review\mossy-review-queue.json"
 
 # ================================================================
 # HELPER FUNCTIONS

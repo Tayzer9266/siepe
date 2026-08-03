@@ -10,12 +10,12 @@ param(
     [int]$IntervalMinutes = 2,
     [string]$Organization = "https://siepe.visualstudio.com/",
     [string]$Project = "Siepe.Software",
-    [string]$LogPath = "C:\source\MD\AdminTools\Output\mossy-review-monitor.log",
+    [string]$LogPath = "C:\source\MD\AdminTools\.github\skills\ado-mossy-review\mossy-review-monitor.log",
     [switch]$NotifyOnNewItems,
     [switch]$Verbose
 )
 
-$stateFile = "C:\source\MD\AdminTools\Output\mossy-review-state.json"
+$stateFile = "C:\source\MD\AdminTools\.github\skills\ado-mossy-review\mossy-review-state.json"
 $intervalSeconds = $IntervalMinutes * 60
 
 Write-Host "`n========================================" -ForegroundColor Cyan

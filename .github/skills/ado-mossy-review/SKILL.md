@@ -52,7 +52,7 @@ Invoke this skill when the user:
    ```
 
 2. **Load Queue File**
-   - Location: `C:\source\MD\AdminTools\Output\mossy-review-queue.json`
+   - Location: `C:\source\MD\AdminTools\.github\skills\ado-mossy-review\mossy-review-queue.json`
    - Structure:
      ```json
      {
@@ -652,9 +652,11 @@ Investigating intermittent cash reconciliation failures with generic error messa
 
 ### File Locations
 
-- **Queue File:** `C:\source\MD\AdminTools\Output\mossy-review-queue.json`
-- **State File:** `C:\source\MD\AdminTools\Output\mossy-review-state.json`
-- **Log File:** `C:\source\MD\AdminTools\Output\mossy-review-monitor.log`
+- **Queue File:** `C:\source\MD\AdminTools\.github\skills\ado-mossy-review\mossy-review-queue.json`
+- **State File:** `C:\source\MD\AdminTools\.github\skills\ado-mossy-review\mossy-review-state.json`
+- **Log Files:** 
+  - Monitor: `C:\source\MD\AdminTools\.github\skills\ado-mossy-review\mossy-review-monitor.log`
+  - Processor: `C:\source\MD\AdminTools\.github\skills\ado-mossy-review\mossy-review-processor.log`
 - **Scripts:** `C:\source\MD\AdminTools\.github\skills\ado-mossy-review\`
 
 ### Tags
@@ -798,7 +800,7 @@ az boards work-item update --id 85717 --fields "System.Tags=;Mossy Review;Mossy 
 **Solution:**
 ```powershell
 # Rebuild queue from scratch
-Remove-Item "C:\source\MD\AdminTools\Output\mossy-review-queue.json"
+Remove-Item "C:\source\MD\AdminTools\.github\skills\ado-mossy-review\mossy-review-queue.json"
 .\Check-MossyReview-WorkItems.ps1
 ```
 

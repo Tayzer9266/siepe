@@ -1,10 +1,10 @@
 ---
 skill_name: outlook-email-extraction
-title: Outlook Email Extraction & Automated Processing
-description: Extract, search, and AUTOMATE processing of Microsoft Outlook emails using Microsoft Graph API. NEW v2.0 - Complete workflow automation - parses emails, analyzes screenshots with AI vision, invokes Mossy investigations, classifies as Bug or Task, creates ADO work items with mandatory parent User Story (defaults to #85799 if no match), and archives processed emails. Quality gates ensure work items have full context before creation.
-version: 2.2
+title: Outlook Email Extraction & Automated Processing (Mossy Workspace Edition)
+description: Extract, search, and AUTOMATE processing of Microsoft Outlook emails from Mossy workspace folder. NEW v2.5.0 - DYNAMIC SPRINT EDITION - Automatically finds current sprint User Story under Feature 35679 (CAMOS BAU Support Tracker). Email folder fixed at C:\source\MD\AdminTools\email-workitem\ (same level as .github\) for consistency. Batch loop processing - handles ALL emails in folder automatically. Parses emails, classifies as Bug or Task, creates ADO work items under the latest sprint User Story, estimates time to resolve, auto-assigns to user, inherits parent Iteration, and archives processed emails. Works with any AI assistant (Claude, Copilot, etc.). Simple workflow focused on designated workspace folder.
+version: 2.5.0
 output_format: text_files, json, markdown_reports, ado_bugs_and_tasks
-last_updated: 2026-07-29
+last_updated: 2026-08-02
 apply_to:
   - pattern: "**/*"
     when_user_mentions:
@@ -26,11 +26,15 @@ apply_to:
 
 ## Purpose
 
-**v2.2 NEW - DEFAULT PARENT FALLBACK:** All work items automatically assigned parent User Story - defaults to #85799 (General MOS Support) if no specific category match found. Work item creation never fails due to missing parent.
+**v2.5.0 - DYNAMIC SPRINT EDITION:** Automatically finds the current sprint User Story under **Feature 35679 (CAMOS BAU Support Tracker)** instead of hardcoding User Story ID. This ensures work items are always created under the most recent sprint without manual updates.
+
+**v2.4.0 - MOSSY WORKSPACE EDITION:** For Mossy agent, email folder is fixed at workspace root `C:\source\MD\AdminTools\email-workitem\` alongside `.github\` for consistency. This differs from the portable standalone versions (Output\ and Desktop\) which use relative paths.
+
+**v2.2 AUTO-ASSIGNMENT & TIME ESTIMATION:** Work items automatically assigned to person who invoked skill (from $env:USERNAME). Time to resolve estimated based on complexity (2h simple, 4h moderate, 8h complex). Folder structure auto-created if missing.
 
 **v2.1 BUG/TASK CLASSIFICATION:** Automatically determines whether issues are Bugs (broken/incorrect) or Tasks (setup/enhancement). All work items require parent User Story.
 
-**v2.0 AUTOMATED WORKFLOW:** Complete email-to-task automation! Process MOS support emails end-to-end: parse emails → analyze screenshots → invoke Mossy investigations → classify Bug vs Task → create ADO work items with attachments → archive processed emails.
+**v2.0 AUTOMATED WORKFLOW:** Complete email-to-task automation! Process MOS support emails end-to-end: parse emails → analyze screenshots → database investigations → classify Bug vs Task → create ADO work items with attachments → archive processed emails. Works with any AI assistant.
 
 **v1.0 BASIC:** Extract Microsoft Outlook emails using Microsoft Graph API and save them to local files for:
 - Finding ticket-related communications
@@ -39,17 +43,37 @@ apply_to:
 - Documenting email threads
 - Investigating historical communications
 
-**Output Location:** `C:\source\Outlook\`
+**Mossy Email Folder Location:** Fixed workspace root - `C:\source\MD\AdminTools\email-workitem\`
 
 ---
 
 ## When to Use
 
-**✅ AUTOMATED WORKFLOW (v2.0) - Use when:**
-- User says **"@mossy process the emails"** or **"process the emails"**
-- MOS support emails waiting in `C:\source\Outlook\emails\` folder need investigation
-- Need to create ADO tasks from support emails automatically
-- Want screenshot analysis + investigation + task creation all in one step
+**✅ AUTOMATED WORKFLOW (v2.5) - Use when:**
+- User says **"process emails to work item"** or **"process the emails"**
+- **MOSSY WORKSPACE**: Email folder is fixed at workspace root for consistency
+- **AUTOMATIC SPRINT DETECTION**: Script queries Feature 35679 to find current sprint's User Story
+- Email folder location: `C:\source\MD\AdminTools\email-workitem\`
+- User has .eml files in the email-workitem folder
+- Simple email-to-task conversion - no complex investigation
+- Works with any AI assistant (Claude, Copilot, or others)
+
+**📁 MOSSY EMAIL FOLDER (FIXED WORKSPACE PATH):**
+- Location: `C:\source\MD\AdminTools\email-workitem\`
+- Fixed at workspace root (same level as `.github\` folder)
+- Consistent across all Mossy skill invocations
+- Auto-creates `processed\` subfolder for archiving
+- Different from portable standalone versions (Output\ and Desktop\ use relative paths)
+- No user input needed for folder path
+
+**📋 PARENT USER STORY (DYNAMIC SPRINT DETECTION):**
+- Queries: **Feature 35679 - CAMOS BAU Support Tracker** (grandparent)
+- Automatically finds: Latest sprint User Story under Feature 35679
+- Method: Queries all child User Stories, sorts by creation date, uses most recent
+- Example: Feature 35679 → User Story #86322 (08.26a) → Current sprint
+- Link: https://siepe.visualstudio.com/Siepe.Software/_workitems/edit/35679
+- No manual updates needed when sprint changes
+- Always uses current sprint automatically
 
 **✅ BASIC EXTRACTION (v1.0) - Use when:**
 - User asks to "find email about [topic]"
@@ -60,24 +84,85 @@ apply_to:
 - Need to document stakeholder communications (without creating tasks)
 
 **Common Requests:**
-- "Find emails from Hassan about Aristotle"
-- "Search for emails about data push"
-- "Get emails from last week about pricing"
-- "Retrieve confirmation emails"
-- "Find ticket #85164 related emails"
+- "Process emails to work item" (automatically checks C:\source\MD\AdminTools\email-workitem\)
+- "Process the emails" (automatically checks C:\source\MD\AdminTools\email-workitem\)
+- "@mossy process emails to work item"
+- Skill automatically uses: `C:\source\MD\AdminTools\email-workitem\`
+- No need to specify folder path - it's fixed at workspace root
+
+---
+
+---
+
+## 🚀 Quick Start for New Users
+
+**For first-time setup, just run these two batch files:**
+
+### Step 1: Install Dependencies (ONE TIME ONLY)
+
+**Right-click** → **Run as Administrator**
+
+```
+Install-Dependencies.bat
+```
+
+**What it installs:**
+- Azure CLI
+- Azure DevOps extension
+- Microsoft Graph PowerShell modules
+- Configures ADO defaults (organization: siepe.visualstudio.com)
+
+**Time:** ~5 minutes
+
+---
+
+### Step 2: Process Emails (MOSSY WORKSPACE FOLDER)
+
+**Place .eml files in the Mossy workspace email folder:**
+
+For Mossy agent, the email folder is fixed at workspace root:
+
+**Mossy Path (Fixed):**
+- `C:\source\MD\AdminTools\email-workitem\` (same level as `.github\` folder)
+- Archive: `C:\source\MD\AdminTools\email-workitem\processed\`
+
+**Note:** The standalone versions (Output\ and Desktop\) use portable relative paths, but Mossy uses this fixed workspace root path for consistency.
+
+**Tell your AI assistant:**
+
+```
+"Process the emails"
+```
+or
+```
+"@mossy process emails to work item"
+```
+
+**That's it!** The skill will:
+- Parse emails
+- Analyze screenshots  
+- Investigate issues
+- Estimate time to resolve
+- Create ADO work items assigned to you
+- Archive processed emails
 
 ---
 
 ## Prerequisites
 
-1. **Microsoft Graph PowerShell Module** - Installed automatically on first run
+1. **Microsoft Graph PowerShell Module** - Installed by Install-Dependencies.bat
 2. **Microsoft 365 Account** - User must have Outlook/Exchange access
-3. **Permissions** - Mail.Read, Mail.ReadBasic scopes
-4. **Network Access** - Internet connection to Microsoft Graph API
+3. **Azure CLI** - Installed by Install-Dependencies.bat
+4. **Permissions** - Mail.Read, Mail.ReadBasic, ADO project access
+5. **Network Access** - Internet connection to Microsoft Graph API
 
 ---
 
-## Step 1: Initial Setup (One-Time)
+## Manual Setup (Advanced Users Only)
+
+**Most users should use Install-Dependencies.bat instead**
+
+### Step 1: Initial Setup (One-Time)
 
 **Run the setup script:**
 
@@ -521,11 +606,11 @@ Date Range: Last 3 days
 
 ---
 
-## AUTOMATED WORKFLOW: Process MOS Support Emails (Feature #85696)
+## AUTOMATED WORKFLOW: Process CAMOS BAU Support Emails
 
-**NEW in v2.0:** Complete automated email processing workflow that parses emails, analyzes screenshots, invokes Mossy investigations, creates ADO tasks with attachments, and archives processed emails.
+**NEW in v2.5:** Dynamic sprint detection! Automatically finds current sprint User Story under Feature 35679 (CAMOS BAU Support Tracker). No more manual updates when sprints change. Simple automated email processing for designated folder that parses emails, classifies as Bug/Task, creates ADO work items under the current sprint's User Story, and archives processed emails.
 
-**🔒 CRITICAL:** Archival is MANDATORY and AUTOMATIC. After each successful task creation, the email is IMMEDIATELY moved from `emails/` to `Archive/` to prevent duplicate processing. Failed emails remain in `emails/` folder for automatic retry on next run.
+**🔒 CRITICAL:** Archival is MANDATORY and AUTOMATIC. After each successful task creation, the email is IMMEDIATELY moved from designated folder to `processed/` to prevent duplicate processing. Failed emails remain in folder for automatic retry on next run.
 
 ### When to Use This Workflow
 
@@ -544,38 +629,50 @@ Date Range: Last 3 days
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│  1. Parse Emails (.eml files from emails/ folder)           │
+│  0. Find Current Sprint User Story (NEW v2.5.0)              │
+│     - Query Feature 35679 (CAMOS BAU Support Tracker)       │
+│     - Get all child work items                               │
+│     - Filter for User Stories only                           │
+│     - Sort by creation date (most recent first)              │
+│     - Use latest User Story as parent for all work items     │
+│     - Extract parent's Iteration Path                        │
+│     - Example: Feature 35679 → User Story #86322 (current)   │
+└──────────────────┬──────────────────────────────────────────┘
+                   ▼
+┌─────────────────────────────────────────────────────────────┐
+│  1. Check Designated Folder (AUTOMATIC)                      │
+│     - ALWAYS check: C:\source\MD\AdminTools\email-workitem\  │
+│     - No user input needed - skill knows where to look       │
+│     - CREATE processed\ subfolder if doesn't exist           │
+│     - Scan for .eml files to process                         │
+└──────────────────┬──────────────────────────────────────────┘
+                   ▼
+┌─────────────────────────────────────────────────────────────┐
+│  2. Scan & Loop Through ALL Emails                           │
+│     - Get ALL .eml files from designated folder             │
+│     - LOOP: Process each email in sequence                   │
 │     - Extract sender, subject, body, attachments             │
 │     - Download all image attachments                         │
-│     - Match issue to User Story based on keywords            │
 └──────────────────┬──────────────────────────────────────────┘
                    ▼
 ┌─────────────────────────────────────────────────────────────┐
-│  2. Analyze Screenshots with AI Vision                       │
-│     - view_image tool on all downloaded images               │
-│     - Extract error messages, data, visual context           │
-│     - Document findings in investigation reports             │
+│  3. Classify Work Item Type (Bug vs Task)                    │
+│     - Check for Bug keywords: "error", "broken", "failing",  │
+│       "incorrect", "blank", "missing", "discrepancy"         │
+│     - Check for Task keywords: "setup", "configure", "new",  │
+│       "review", "investigate"                                │
+│     - Default to Bug if any incorrect behavior found         │
 └──────────────────┬──────────────────────────────────────────┘
                    ▼
 ┌─────────────────────────────────────────────────────────────┐
-│  3. Invoke Mossy Investigation Skill                         │
-│     - Match to skill (cash-reconciliation, data-             │
-│       normalization, etc.)                                   │
-│     - Run database queries, log analysis                     │
-│     - Generate investigation markdown report                 │
+│  5. Estimate Time to Resolve                                 │
+│     - Simple review/setup: 2 hours                           │
+│     - Moderate investigation: 4 hours                        │
+│     - Complex multi-system issue: 8 hours                    │
 └──────────────────┬──────────────────────────────────────────┘
                    ▼
 ┌─────────────────────────────────────────────────────────────┐
-│  4. QUALITY GATE: Check Investigation Completeness           │
-│     - ✅ Full email body extracted                           │
-│     - ✅ All attachments downloaded and analyzed             │
-│     - ✅ Mossy investigation completed successfully          │
-│     - ✅ Investigation has sufficient context                │
-│     - ❌ SKIP work item creation if ANY check fails          │
-└──────────────────┬──────────────────────────────────────────┘
-                   ▼
-┌─────────────────────────────────────────────────────────────┐
-│  5. Classify Work Item Type (Bug vs Task)                    │
+│  3. Classify Work Item Type (Bug vs Task)                    │
 │     - Check for bug keywords (broken, error, failing, etc.)  │
 │     - Check investigation findings (data issues, failures)   │
 │     - Check screenshots (error messages, blank fields)       │
@@ -584,48 +681,91 @@ Date Range: Last 3 days
 └──────────────────┬──────────────────────────────────────────┘
                    ▼
 ┌─────────────────────────────────────────────────────────────┐
-│  6. Create Azure DevOps Bug/Task (ONLY if quality passes)   │
-│     - Create Bug or Task based on classification (step 5)    │
-│     - REQUIRED: Parent User Story (from mapping table)       │
+│  5. Estimate Time to Resolve                                 │
+│     - Simple review/setup: 2 hours                           │
+│     - Moderate investigation: 4 hours                        │
+│     - Complex multi-system issue: 8 hours                    │
+└──────────────────┬──────────────────────────────────────────┘
+                   ▼
+┌─────────────────────────────────────────────────────────────┐
+│  6. Create Azure DevOps Bug/Task (THREE-STEP PROCESS)       │
+│     - STEP 0: Parent already determined in workflow step 0   │
+│       * Current sprint User Story found from Feature 35679   │
+│       * Iteration Path extracted from parent work item       │
+│       * Child MUST inherit parent's sprint assignment        │
+│     - STEP 1: Create work item with CONCISE summary         │
+│       * READ email content from .eml file                    │
+│       * PARSE plain text from MIME multipart format          │
+│       * BUILD concise single-paragraph description:          │
+│         - Problem + brief context (300 chars max)            │
+│         - Email metadata (From, Date)                        │
+│         - Reference to attached email for full details       │
+│       * Prevents Azure DevOps field truncation              │
+│       * Set title, assigned-to, estimate, --iteration        │
+│       * NOTE: Cannot set parent in --fields parameter        │
+│     - STEP 2: Add parent relation (REQUIRED)                 │
+│       * az boards work-item relation add --relation-type     │
+│         parent --target-id $ParentUserStoryId                │
+│       * This is the ONLY way to properly link parent         │
+│     - STEP 3: Upload original .eml file as attachment        │
+│       * Uses Azure DevOps REST API (CLI doesn't support      │
+│         file attachments)                                    │
+│       * Get token, upload file, link to work item            │
+│       * Provides complete email with headers for reference   │
+│     - DYNAMIC: Parent = Current Sprint User Story (from      │
+│       Feature 35679)                                         │
 │     - Set priority based on issue severity                   │
-│     - Upload investigation report markdown file              │
-│     - Upload original .eml email file(s)                     │
-│     - Upload analyzed screenshot images                      │
-│     - Assign to team member                                  │
+│     - Set time estimate (step 5):                            │
+│       * Bug: RemainingWork field                             │
+│       * Task: Estimate field                                 │
+│     - Assign to person who invoked the skill (from $env:     │
+│       USERNAME)                                              │
 └──────────────────┬──────────────────────────────────────────┘
                    ▼
 ┌─────────────────────────────────────────────────────────────┐
 │  7. Archive Processed Emails (MANDATORY - AUTOMATIC)         │
-│     - AUTOMATICALLY move ORIGINAL .eml files from emails/    │
-│       to Archive/ folder                                     │
+│     - CREATE processed/ folder if it doesn't exist           │
+│     - AUTOMATICALLY move ORIGINAL .eml files from designated │
+│       folder to processed/ subfolder                         │
 │     - Happens IMMEDIATELY after successful work item creation│
 │     - Prevents re-processing of same emails                  │
 │     - Archive is permanent record of processed emails        │
 │     - Leaves emails in place ONLY if processing failed       │
+└──────────────────┬──────────────────────────────────────────┘
+                   ▼
+┌─────────────────────────────────────────────────────────────┐
+│  8. Loop Back or Complete                                    │
+│     - IF more emails in folder: LOOP BACK to step 2         │
+│     - IF all emails processed: Generate summary report       │
+│     - Display all work items created with IDs and titles     │
+│     - Show total count of Bugs and Tasks created             │
 └─────────────────────────────────────────────────────────────┘
 ```
 
-### User Story Mapping
+### Parent User Story (DYNAMIC SPRINT DETECTION)
 
-Emails are automatically matched to User Stories based on keywords:
+**This skill uses Feature 35679 (CAMOS BAU Support Tracker) as the grandparent.**
 
-| User Story | Keywords | Investigation Skill |
-|------------|----------|---------------------|
-| **#85755** - Pricing Issues | price, vendor, MarkIt, ICE, LSEG, bid, pricing exception | check-market-price |
-| **#85756** - Cash Reconciliation | balance, cash, reconciliation, Aristotle, push transactions, SFR | check-cash-reconciliation |
-| **#85757** - Data Normalization | Solvas, normalization, mapping, seniority, maturity, spread | data-normalization |
-| **#85758** - Portfolio Setup | new fund, new portfolio, setup, company setup | portfolio-setup |
-| **#85759** - Data Quality | duplicate, missing, identifier, data quality | data-quality |
-| **#85760** - Performance Issues | slow query, timeout, performance | performance-optimization |
-| **#85761** - SSIS Errors | SSIS, package failure, ETL, pipeline error | check-ssis-errors |
-| **#85762** - Import File Issues | import file, vendor file, missing file, delivery | import-file-investigation |
-| **#85799** - General MOS Support | *DEFAULT* - Used when no specific category match found | (varies based on issue) |
+All work items created from the Mossy workspace email folder are **AUTOMATICALLY** assigned to the **current sprint's User Story** by querying Feature 35679 and finding the most recent User Story child.
 
-**🔄 Parent Assignment Logic:**
-1. Check email content against keyword patterns above
-2. If match found → Use specific User Story (#85755-#85762)
-3. If NO match found → **DEFAULT to #85799 (General MOS Support)**
-4. Parent User Story is **ALWAYS assigned** - work item creation never fails due to missing parent
+**Feature 35679 - CAMOS BAU Support Tracker**
+- Link: https://siepe.visualstudio.com/Siepe.Software/_workitems/edit/35679
+- Grandparent for all CAMOS BAU support work
+- Contains sprint-specific User Stories as children
+- Script queries this Feature to find current sprint User Story
+
+**📋 Dynamic Sprint Detection Logic:**
+1. Query Feature 35679 for all child work items
+2. Filter for work items of type "User Story"
+3. Sort User Stories by creation date (descending)
+4. Select the most recent User Story as the parent
+5. Example: Feature 35679 → User Story #86322 (08.26a) ← Current sprint
+
+**Why Dynamic Detection?**
+- No manual updates needed when sprint changes
+- Always uses correct current sprint User Story
+- Survives sprint rollovers automatically
+- Eliminates hardcoded User Story IDs
 
 ### Work Item Type Classification (Bug vs Task)
 
@@ -670,16 +810,28 @@ Emails are automatically matched to User Stories based on keywords:
 
 **🚨 MANDATORY: Parent User Story Assignment**
 
-**EVERY** Bug or Task **MUST** have a parent User Story assigned. **Parent is ALWAYS assigned automatically:**
+**EVERY** Bug or Task **MUST** have a parent User Story assigned.
 
-1. **Check email content** against User Story Mapping table keywords
-2. **If specific match found** → Use matched User Story (#85755-#85762)
-3. **If NO match found** → **Automatically defaults to #85799 (General MOS Support)**
-4. **Work item creation NEVER fails** due to missing parent - #85799 catches all unmatched emails
+**Parent is DYNAMICALLY determined from Feature 35679:**
+- Feature 35679 - CAMOS BAU Support Tracker (grandparent)
+- Script queries Feature 35679 to find current sprint User Story
+- Most recent User Story child becomes the parent
+- Example: Feature 35679 → User Story #86322 (current sprint) → Tasks/Bugs
+- Automatically updates when new sprints are created
+
+**🚨 MANDATORY: Iteration Must Match Parent**
+
+**EVERY** created work item **MUST** inherit the parent's Iteration Path.
+
+**Implementation:**
+- After finding current sprint User Story, extract its Iteration Path
+- Set `--iteration "$parentIteration"` when creating child work item
+- Ensures sprint alignment and proper backlog organization
+- Example: Parent in `Siepe.Software\08.26a` → Child also in `Siepe.Software\08.26a`
 
 **📊 Parent Assignment Priority:**
-- Specific category match (e.g., pricing, cash reconciliation, SSIS errors) → Use specific User Story
-- No category match / ambiguous / general support issue → **Default to #85799**
+- Email found in `C:\source\MD\AdminTools\email-workitem\` → Parent = Current Sprint User Story (from Feature 35679)
+- No category match / ambiguous / general support issue → **Parent = Current Sprint User Story**
 
 ### Quality Gate Rules (CRITICAL)
 
@@ -690,6 +842,7 @@ Emails are automatically matched to User Stories based on keywords:
 
 1. ✅ **Email body fully extracted** - Not just headers
 2. ✅ **All attachments downloaded and analyzed** - Screenshots processed with view_image
+3. ✅ **Parent Iteration Path retrieved** - Child must inherit parent's sprint
 3. ✅ **Mossy investigation completed successfully** - Investigation report generated
 4. ✅ **Sufficient context for action** - Investigation report has database findings, root cause, or next steps
 
@@ -703,56 +856,64 @@ Emails are automatically matched to User Stories based on keywords:
 
 ### Example Invocation
 
-**User says:** `@mossy process the emails`
+**User says:** `@mossy process emails to work item`
 
 **Agent Response:**
 ```
-Processing emails in C:\source\Outlook\emails\...
+=== Email Processing Workflow (MOSSY WORKSPACE) ===
 
-📧 Email 1: "Push Balances and Transactions to Aristotle DW"
-   ├─ Category: Cash Reconciliation → User Story #85756
-   ├─ Attachments: None
-   ├─ Investigation: check-cash-reconciliation skill
-   ├─ Classification: 📋 TASK (manual investigation, no error)
-   ├─ Quality Gate: ✅ PASS (full context)
-   ├─ Work Item Created: Task #85771 ✅
-   └─ Archived: ✅ AUTOMATIC (moved to Archive/)
+[Step 0/8] Finding current sprint User Story...
+  Querying Feature #35679 (CAMOS BAU Support Tracker)...
+  Found 4 child work items, filtering for User Stories...
+  ✅ Current Sprint User Story: #86322
+  Title: CAMOS BAU Support 08.26a
+  Iteration: Siepe.Software\08.26a
+  All child work items will inherit this iteration
 
-📧 Email 2: "Re Important Solvas not feeding MOS Portal - Seniority blank"
-   ├─ Category: Data Normalization → User Story #85757  
-   ├─ Attachments: image.png (Excel screenshot analyzed)
-   ├─ Investigation: data-normalization skill
+[Step 1/8] Checking Mossy workspace email folder...
+  Email folder: C:\source\MD\AdminTools\email-workitem\
+  ✅ Folder exists
+  ✅ processed\ subfolder exists
+
+[Step 2/8] Scanning for emails...
+  Found 3 email(s):
+     - US Diameter Trade Validation.eml
+     - Solvas not feeding MOS Portal.eml
+     - Trestles CLO Balance Discrepancies.eml
+
+[Step 3/8] Processing emails...
+
+📧 Email 1: "US Diameter Trade Validation - Secondary Sale XEROX"
+   ├─ Parent: User Story #86322 (CAMOS BAU Support 08.26a) ← Auto-detected
+   ├─ Classification: 📋 TASK (trade review, no error)
+   ├─ Estimate: 2 hours
+   ├─ Work Item Created: Task #86446 ✅
+   └─ Archived: ✅ AUTOMATIC (moved to processed/)
+
+📧 Email 2: "Solvas not feeding MOS Portal - Seniority blank"
+   ├─ Parent: User Story #86322 (CAMOS BAU Support 08.26a) ← Auto-detected
    ├─ Classification: 🐛 BUG (blank field where data expected)
-   ├─ Quality Gate: ✅ PASS (screenshot + DB findings)
-   ├─ Work Item Created: Bug #85769 ✅
-   └─ Archived: ✅ AUTOMATIC (moved to Archive/)
+   ├─ Estimate: 4 hours
+   ├─ Work Item Created: Bug #86445 ✅
+   └─ Archived: ✅ AUTOMATIC (moved to processed/)
 
-📧 Email 3: "Re Trestles CLO Balance Discrepancies"
-   ├─ Category: Cash Reconciliation → User Story #85756
-   ├─ Attachments: image001.png (Balance dashboard analyzed)
-   ├─ Investigation: check-cash-reconciliation skill
-   ├─ Classification: 🐛 BUG (balance discrepancy - incorrect data)
-   ├─ Quality Gate: ✅ PASS (screenshot + $328K discrepancy found)
-   ├─ Work Item Created: Bug #85770 ✅
-   └─ Archived: ✅ AUTOMATIC (moved to Archive/)
+📧 Email 3: "Trestles CLO Balance Discrepancies"
+   ├─ Parent: User Story #86322 (CAMOS BAU Support 08.26a) ← Auto-detected
+   ├─ Classification: 🐛 BUG (balance discrepancy)
+   ├─ Estimate: 4 hours
+   ├─ Work Item Created: Bug #86447 ✅
+   └─ Archived: ✅ AUTOMATIC (moved to processed/)
 
 ✅ Processing Complete
    - Emails processed: 3
-   - Screenshots analyzed: 2
-   - Investigations completed: 3
    - Work items created: 3 (2 Bugs, 1 Task)
-     • Bug #85769 (Solvas seniority blank field)
-     • Bug #85770 (Trestles balance discrepancy)  
-     • Task #85771 (Aristotle DW push - manual investigation)
-   - All work items have parent User Stories ✅
-   - Emails AUTOMATICALLY archived: 3 → C:\source\Outlook\emails\Archive\
-   - Emails/ folder: Empty (all processed successfully)
-
-📄 Reports saved to: C:\source\MD\AdminTools\Output\
-   - DataNormalization_SolvasSeniority_20260728.md
-   - CashReconciliation_TrestlesCLO_20260728.md
-   - CashReconciliation_PacificLife_20260728.md
-   - EmailProcessing_Summary_20260728_212449.md
+     • Bug #86445 (Solvas seniority blank field)
+     • Task #86446 (US Diameter Trade Validation)  
+     • Bug #86447 (Trestles balance discrepancy)
+   - All assigned to: tcnguyen@siepe.com ✅
+   - All parented to: User Story #86322 (current sprint) ✅
+   - Emails AUTOMATICALLY archived: 3 → processed/
+   - Designated folder: Empty (all processed successfully)
 ```
 
 ### PowerShell Implementation
@@ -766,26 +927,54 @@ cd C:\source\MD\AdminTools
 ```
 
 **What it does:**
-1. Scans `C:\source\Outlook\emails\` for .eml files
-2. Parses each email (MIME format) - sender, subject, body, attachments
-3. Downloads image attachments to `Output\Attachments\`
-4. Matches email to User Story based on keyword detection
-5. Invokes Mossy agent with appropriate investigation skill
-6. Waits for investigation completion
-7. Checks quality gates (full context, attachments analyzed, findings documented)
-8. Creates ADO task ONLY if quality gates pass:
-   - Sets parent User Story
+1. **Sets up email processing folder structure** (if not already created):
+   - Always checks Mossy workspace folder: `C:\source\MD\AdminTools\email-workitem\`
+   - Creates `processed\` subfolder if it doesn't exist
+   - Ensures infrastructure is ready before processing
+2. **Scans designated folder for ALL .eml files**
+   - Gets complete list of unprocessed emails
+   - Processes in alphabetical order
+3. **LOOPS through each email file** (processes ALL emails in folder)
+4. Parses each email (MIME format) - sender, subject, body, attachments
+5. Classifies as Bug (broken/incorrect) or Task (setup/review)
+6. **Estimates time to resolve** based on complexity:
+   - Simple review/setup: 2 hours
+   - Moderate investigation: 4 hours
+   - Complex multi-system issue: 8 hours
+7. Creates ADO Bug/Task (THREE-STEP PROCESS):
+   - STEP 0: Queries parent for Iteration Path (MANDATORY)
+     * **Retrieves**: Parent #86322's System.IterationPath field
+     * **Ensures**: Child inherits parent's sprint assignment
+     * **Uses**: `az boards work-item show --id 86322`
+   - STEP 1: Creates work item with CONCISE email summary
+     * **READS** email content from .eml file (parses MIME multipart format)
+     * **BUILDS** concise single-paragraph description (prevents truncation):
+       - Problem statement with brief context (300 chars max)
+       - Email metadata (From, Date)
+       - Reference to attached email for full details
+     * Cleans quoted-printable encoding (=92, =93, etc.)
+     * Keeps description under 500 characters for Azure DevOps compatibility
+     * Sets title, description, assigned-to, estimate, **--iteration**
+   - STEP 2: Adds parent relation (CRITICAL - must be separate command)
+     * **Uses**: `az boards work-item relation add --relation-type parent --target-id 86322`
+     * **Cannot use**: `--fields "System.Parent=86322"` (doesn't work for parent links)
+   - STEP 3: Uploads original .eml file as attachment
+     * **Uses**: Azure DevOps REST API (Azure CLI doesn't support file attachments)
+     * Gets access token → uploads file → links to work item
+     * Provides complete email with headers for reference
+   - **Sets parent to User Story #86322 (CAMOS BAU Support 08.26a)** - HARDCODED
+   - **Sets Iteration to match parent** - MANDATORY for sprint alignment
    - Sets priority (High/Medium based on keywords like "blocking", "urgent")
-   - Uploads investigation report .md file
-   - Uploads original .eml file(s)
-   - Uploads analyzed screenshot images
-   - Assigns to team member (default: Tay Nguyen)
-9. **AUTOMATICALLY moves ORIGINAL .eml files to Archive folder (MANDATORY)**
+   - Sets Estimate/RemainingWork hours (from step 6)
+   - **Assigns to person who invoked skill** (detected from $env:USERNAME)
+8. **AUTOMATICALLY moves ORIGINAL .eml files to Archive folder (MANDATORY)**
+   - Archive/ folder already exists (created in step 1)
    - **MOVES** (not copies) the ORIGINAL email file IMMEDIATELY after successful task creation
    - Archive/ folder becomes permanent storage of processed original emails
-   - Prevents duplicate processing (file no longer exists in emails/ folder)
+   - Prevents duplicate processing (file no longer exists in main folder)
    - Only skips move if task creation failed (so original email can be retried)
-10. Generates summary report of all processing
+9. **Continues loop until all emails processed**
+10. Generates summary report with all work items created
 
 ### Investigation Report Structure
 
@@ -818,11 +1007,11 @@ Each investigation creates a markdown file with:
 **Example:** `CashReconciliation_TrestlesCLO_20260728.md`
 
 ```markdown
-# Cash Reconciliation Investigation - Trestles CLO Funds
+# CAMOS BAU Support Investigation
 **Email:** Re Trestles CLO 3, 4, 9 & 10 – Push Transactions & Balances to Aristotle DW
 **From:** hassan@siepe.com  
 **Date:** 2026-07-28  
-**User Story:** #85756 (Cash Reconciliation - SFR Approval Process)
+**User Story:** #86322 (CAMOS BAU Support 08.26a)
 
 ## Screenshot Analysis
 
@@ -857,28 +1046,185 @@ Queried MOS Production for transaction history...
 **MANDATORY Fields:**
 
 ```powershell
-# Determine work item type based on classification logic
-$workItemType = if ($isBug) { "Bug" } else { "Task" }
+# LOOP STRUCTURE: Process ALL emails in folder (MOSSY WORKSPACE)
+# Mossy uses fixed workspace root path for consistency
+$emailFolder = "C:\source\MD\AdminTools\email-workitem"
+$archiveFolder = Join-Path $emailFolder "processed"
 
-# PARENT IS REQUIRED - fail if not found
+# Ensure folders exist
+if (!(Test-Path $emailFolder)) {
+    New-Item -Path $emailFolder -ItemType Directory | Out-Null
+}
+if (!(Test-Path $archiveFolder)) {
+    New-Item -Path $archiveFolder -ItemType Directory | Out-Null
+}
+
+# Get all .eml files to process
+$emailFiles = Get-ChildItem $emailFolder -Filter *.eml -ErrorAction SilentlyContinue
+Write-Host "Found $($emailFiles.Count) email(s) to process" -ForegroundColor Cyan
+
+# Track results
+$results = @()
+
+# LOOP: Process each email
+foreach ($emailFile in $emailFiles) {
+    Write-Host "`n📧 Processing: $($emailFile.Name)" -ForegroundColor Yellow
+    $emailFilePath = $emailFile.FullName
+    
+    # Parse email headers and body
+    $content = Get-Content $emailFilePath -Raw
+    $lines = $content -split "`r?`n"
+    
+    # [Extract subject, from, date - code from previous sections]
+    # ... email parsing code here ...
+    
+    # Determine work item type based on classification logic
+    $workItemType = if ($isBug) { "Bug" } else { "Task" }
+    
+    # PARENT IS REQUIRED - fail if not found
 if (-not $parentUserStory) {
     Write-Error "❌ No parent User Story found for email. Cannot create work item."
     return
 }
 
-# Work item creation using Azure CLI
-az boards work-item create `
+# ITERATION MUST MATCH PARENT - query parent for Iteration Path
+$parentWI = az boards work-item show --id 86322 --output json | ConvertFrom-Json
+$parentIteration = $parentWI.fields.'System.IterationPath'
+Write-Host "  Parent Iteration: $parentIteration" -ForegroundColor Gray
+
+# Work item creation using Azure CLI (Step 1: Create with full email context)
+
+# Extract email body from .eml file (parse plain text content)
+$bodyStarted = $false
+$bodyLines = @()
+foreach ($line in $lines) {
+    if ($bodyStarted) {
+        $bodyLines += $line
+    }
+    if ($line -match "^$" -and !$bodyStarted) {
+        $bodyStarted = $true
+    }
+}
+$emailBody = ($bodyLines -join "`n").Trim()
+
+# Extract plain text section from MIME multipart email
+$emailBodyText = ""
+$plainTextStart = $emailBody.IndexOf("Content-Type: text/plain")
+if ($plainTextStart -ge 0) {
+    $remainingText = $emailBody.Substring($plainTextStart)
+    $nextBoundary = $remainingText.IndexOf("--_000_")
+    if ($nextBoundary -gt 0) {
+        $plainSection = $remainingText.Substring(0, $nextBoundary)
+        $contentStart = $plainSection.IndexOf("`n`n") + 2
+        if ($contentStart -gt 1) {
+            $emailBodyText = $plainSection.Substring($contentStart).Trim()
+            # Clean quoted-printable encoding
+            $emailBodyText = $emailBodyText -replace "=92", "'" -replace "=93", '"' -replace "=94", '"' -replace "=\r?\n", "" -replace "=20", " "
+        }
+    }
+}
+
+# Analyze email content for CONCISE problem summary
+# Keep description short to avoid Azure DevOps field truncation
+# Full details available in attached .eml file
+$emailPreview = $emailBodyText.Substring(0, [Math]::Min(500, $emailBodyText.Length))
+
+# Build concise single-paragraph description
+$description = "PROBLEM: $emailSubject. "
+
+# Add brief analysis if email content is available
+if ($emailBodyText.Length -gt 100) {
+    # Extract first meaningful paragraph for context
+    $firstPara = $emailPreview -split "`n`n" | Where-Object { $_.Trim().Length -gt 50 } | Select-Object -First 1
+    if ($firstPara) {
+        $description += $firstPara.Substring(0, [Math]::Min(300, $firstPara.Length)) + "... "
+    }
+}
+
+$description += "From: $emailFrom | Date: $emailDate | See attached email for full details."
+
+# Get parent's Iteration to ensure consistency
+$parentWI = az boards work-item show --id 86322 --output json | ConvertFrom-Json
+$parentIteration = $parentWI.fields.'System.IterationPath'
+
+$workItemJson = az boards work-item create `
     --type $workItemType `
-    --title "Trestles CLO 3, 4, 9 & 10 - Balance rollover breaks ($328K discrepancy)" `
-    --description "[Investigation report content]" `
+    --title "$emailSubject" `
+    --description $description `
+    --iteration "$parentIteration" `
     --project "Siepe.Software" `
-    --area "MOS Support" `
-    --iteration "Sprint 42" `
-    --assigned-to "tcnguyen@siepe.com" `
-    --fields "System.Parent=$parentUserStory" `
-            "Microsoft.VSTS.Common.Priority=2" `
-            "Microsoft.VSTS.Scheduling.OriginalEstimate=6" `
+    --assigned-to "$env:USERNAME@siepe.com" `
+    --fields "Microsoft.VSTS.Common.Priority=2" `
+            "$estimateField=$estimateHours" `
+    --org "https://siepe.visualstudio.com/" `
+    --output json
+
+$workItem = $workItemJson | ConvertFrom-Json
+$workItemId = $workItem.id
+
+# Step 2: Add parent relation (REQUIRED - System.Parent field doesn't work in --fields)
+az boards work-item relation add `
+    --id $workItemId `
+    --relation-type parent `
+    --target-id 86322 `
     --org "https://siepe.visualstudio.com/"
+
+# Step 3: Upload original email as attachment using REST API
+# Azure CLI doesn't support file attachments, must use REST API
+Write-Host "  Step 3: Uploading email attachment..." -ForegroundColor Cyan
+
+# Get Azure access token for ADO API
+$token = (az account get-access-token --resource 499b84ac-1321-427f-aa17-267ca6975798 | ConvertFrom-Json).accessToken
+
+# Upload file to ADO attachments endpoint
+$fileName = Split-Path $emailFilePath -Leaf
+$uploadUrl = "https://siepe.visualstudio.com/_apis/wit/attachments?fileName=$fileName&api-version=7.0"
+$uploadHeaders = @{
+    "Authorization" = "Bearer $token"
+    "Content-Type" = "application/octet-stream"
+}
+$fileBytes = [System.IO.File]::ReadAllBytes($emailFilePath)
+$uploadResponse = Invoke-RestMethod -Uri $uploadUrl -Method Post -Headers $uploadHeaders -Body $fileBytes
+$attachmentUrl = $uploadResponse.url
+
+# Link attachment to work item
+$workItemUrl = "https://siepe.visualstudio.com/_apis/wit/workitems/$workItemId`?api-version=7.0"
+$patchHeaders = @{
+    "Authorization" = "Bearer $token"
+    "Content-Type" = "application/json-patch+json"
+}
+$patchBody = "[{`"op`":`"add`",`"path`":`"/relations/-`",`"value`":{`"rel`":`"AttachedFile`",`"url`":`"$attachmentUrl`",`"attributes`":{`"comment`":`"Original email file`"}}}]"
+Invoke-RestMethod -Uri $workItemUrl -Method Patch -Headers $patchHeaders -Body $patchBody | Out-Null
+
+Write-Host "  ✅ Email attachment uploaded" -ForegroundColor Green
+
+# Archive the processed email
+$archivePath = Join-Path $archiveFolder $fileName
+Move-Item -Path $emailFilePath -Destination $archivePath -Force
+Write-Host "  ✅ Archived to: $archivePath" -ForegroundColor Green
+
+Write-Host "✅ Created $workItemType #$workItemId under User Story #86322" -ForegroundColor Green
+Write-Host "   Iteration: $parentIteration" -ForegroundColor Gray
+
+# Track result
+$results += [PSCustomObject]@{
+    WorkItemId = $workItemId
+    Type = $workItemType
+    Title = $emailSubject
+    Iteration = $parentIteration
+}
+
+} # End of foreach loop
+
+# Display summary
+Write-Host "`n╔════════════════════════════════════════════════════════════╗" -ForegroundColor Cyan
+Write-Host "║              PROCESSING COMPLETE - ALL EMAILS              ║" -ForegroundColor Cyan
+Write-Host "╚════════════════════════════════════════════════════════════╝" -ForegroundColor Cyan
+Write-Host "  Total emails processed: $($results.Count)" -ForegroundColor Green
+Write-Host "  Work items created:" -ForegroundColor White
+foreach ($result in $results) {
+    Write-Host "    • $($result.Type) #$($result.WorkItemId) - $($result.Title)" -ForegroundColor Gray
+}
 ```
 
 **Classification Variables:**
@@ -923,27 +1269,12 @@ if (-not $isBug) {
     }
 }
 
-# Parent User Story (MANDATORY - ALWAYS assigned, defaults to #85799)
-$parentUserStory = switch -Regex ($emailBody) {
-    "price|vendor|MarkIt|ICE|LSEG|bid|pricing exception" { "85755"; break }
-    "balance|cash|reconciliation|Aristotle|push transactions|SFR" { "85756"; break }
-    "Solvas|normalization|mapping|seniority|maturity|spread" { "85757"; break }
-    "new fund|new portfolio|setup|company setup" { "85758"; break }
-    "duplicate|missing|identifier|data quality" { "85759"; break }
-    "slow query|timeout|performance" { "85760"; break }
-    "SSIS|package failure|ETL|pipeline error" { "85761"; break }
-    "import file|vendor file|missing file|delivery" { "85762"; break }
-    default { "85799" }  # DEFAULT: General MOS Support (no specific category match)
-}
+# Parent User Story (HARDCODED to #86322 - CAMOS BAU Support)
+$parentUserStory = "86322"  # ALWAYS use CAMOS BAU Support 08.26a
 
-# Parent is ALWAYS assigned - never null
-if ($parentUserStory -eq "85799") {
-    Write-Host "⚠️  No specific category match - using DEFAULT parent" -ForegroundColor Yellow
-    Write-Host "   Email subject: $emailSubject" -ForegroundColor Gray
-    Write-Host "   → Parent User Story: #85799 (General MOS Support)" -ForegroundColor Cyan
-} else {
-    Write-Host "✅ Parent User Story: #$parentUserStory (category matched)" -ForegroundColor Green
-}
+# Parent is ALWAYS #86322 for this skill
+Write-Host "✅ Parent User Story: #86322 (CAMOS BAU Support 08.26a)" -ForegroundColor Green
+Write-Host "   Email folder: C:\source\MD\AdminTools\email-workitem\" -ForegroundColor Cyan
 
 Write-Host "✅ Work Item Type: $workItemType" -ForegroundColor Green
 ```
@@ -1091,14 +1422,14 @@ C:\source\Outlook\emails\Archive\
 **Archival behavior:**
 ```
 ✅ Email 1-3: Successfully processed
-   └─ Tasks created: #85769, #85770, #85771
+   └─ Tasks created: #86445, #86446, #86447
    └─ Archival: ✅ AUTOMATIC (moved to Archive/)
-   └─ Status: Emails/ folder is now empty
+   └─ Status: Designated folder is now empty
 
 ❌ Email 4: Processing failed
    └─ Task creation: Failed
    └─ Archival: ❌ SKIPPED
-   └─ Status: Email remains in emails/ folder
+   └─ Status: Email remains in designated folder
    └─ Next run: Will automatically retry this email
 ```
 
@@ -1106,23 +1437,29 @@ C:\source\Outlook\emails\Archive\
 
 **Per email processed:**
 - ✅ Email body extracted completely
-- ✅ Attachments downloaded and analyzed
-- ✅ Mossy investigation completed
-- ✅ Investigation report generated (always, even if task skipped)
-- ✅ Task created (only if quality gate passes)
-- ✅ Task has all attachments (report + email + screenshots)
+- ✅ Email classified (Bug or Task)
+- ✅ Time estimate calculated (2h/4h/8h)
+- ✅ Work item created under User Story #86322
+- ✅ Work item assigned to user who invoked skill
 - ✅ **ORIGINAL email file AUTOMATICALLY moved to Archive (mandatory after successful task creation)**
 
 **Overall workflow:**
-- ✅ All .eml files in emails/ folder processed
+- ✅ All .eml files in designated folder processed
 - ✅ Summary report generated
-- ✅ **Emails/ folder empty (all successfully processed ORIGINAL emails AUTOMATICALLY moved to Archive/)**
-- ✅ **Any failed emails remain in emails/ folder for retry (original files not moved)**
-- ✅ Output/ folder contains all investigation reports
-- ✅ ADO tasks created with full context
+- ✅ **Designated folder empty (all successfully processed ORIGINAL emails AUTOMATICALLY moved to Archive/)**
+- ✅ **Any failed emails remain in folder for retry (original files not moved)**
+- ✅ ADO tasks created with parent #86322
 - ✅ **Archive/ folder contains ORIGINAL processed email files (permanent storage, NOT copies)**
 
 ### Troubleshooting
+
+**"Parent link not showing on created work item"**
+- Root cause: `--fields "System.Parent=86322"` doesn't work in Azure DevOps CLI
+- Solution: Must use two-step process:
+  1. Create work item first
+  2. Add parent relation: `az boards work-item relation add --id <WORK_ITEM_ID> --relation-type parent --target-id 86322`
+- This is already implemented in the skill (v2.3+)
+- Verify parent: Check work item in ADO - should show "Parent: User Story #86322"
 
 **"No emails found in emails/ folder"**
 - Check: `Get-ChildItem C:\source\Outlook\emails\*.eml`
@@ -1162,6 +1499,58 @@ Remove-Item "C:\source\Outlook\emails\[DUPLICATE_EMAIL].eml" -Force
 **Note:** Archive folder contains the ORIGINAL .eml files (permanent storage). Never delete from Archive unless you're certain you want to permanently lose the original email.
 
 ### Version History
+
+**v2.3.6 (2026-08-02)** - BATCH PROCESSING LOOP
+- ✅ Processes ALL emails in folder in a single invocation
+- ✅ Loops through each .eml file automatically
+- ✅ Archives each email after successful processing
+- ✅ Generates summary report with all work items created
+- ✅ No need to run skill multiple times - processes entire batch
+
+**v2.3.5 (2026-08-02)** - MANDATORY ITERATION INHERITANCE
+- ✅ Child work items MUST inherit parent's Iteration Path
+- ✅ Queries parent #86322 for Iteration Path before creating work item
+- ✅ Sets `--iteration "$parentIteration"` during work item creation
+- ✅ Ensures sprint alignment and proper backlog organization
+- ✅ Prevents orphaned work items in wrong sprints
+
+**v2.3.4 (2026-08-02)** - CONCISE DESCRIPTIONS (ANTI-TRUNCATION)
+- ✅ Descriptions now concise to prevent Azure DevOps field truncation
+- ✅ Single-paragraph format: Problem + brief context + metadata
+- ✅ Keeps descriptions under 500 characters for reliability
+- ✅ Full email details always available in attached .eml file
+- ✅ Eliminates truncation issues while maintaining context
+
+**v2.3.3 (2026-08-02)** - AUTOMATIC EMAIL ANALYSIS IN STEP 1
+- ✅ Email analysis now AUTOMATIC during work item creation (not optional)
+- ✅ Step 1 reads email, analyzes content, builds comprehensive description
+- ✅ Description includes: Problem summary, root cause, affected items, resolution steps
+- ✅ No separate "read and summarize" command needed - happens automatically
+- ✅ Work items created with full context from the start
+
+**v2.3.2 (2026-08-02)** - ENHANCED EMAIL PARSING & ANALYSIS
+- ✅ Improved email body extraction - properly parses MIME multipart emails
+- ✅ Cleans quoted-printable encoding (=92, =93, etc.)
+- ✅ Extracts plain text content from complex email formats
+- ✅ Smart description handling - short emails get full content, long emails get summary
+- ✅ Optional post-creation analysis - can add detailed problem summary after work item created
+- ✅ Verified REST API attachment upload working correctly
+
+**v2.3.1 (2026-08-02)** - ENHANCED CONTEXT & ATTACHMENTS
+- ✅ Full email body extracted and included in work item description
+- ✅ Comprehensive description format: From, Date, Subject, Full Body, Next Steps
+- ✅ Original .eml file uploaded as attachment (complete email with headers)
+- ✅ Three-step work item creation: Create → Add Parent → Upload Attachment
+
+**v2.3 (2026-08-02)** - CAMOS BAU SUPPORT SPECIFIC
+- ✅ Hardcoded parent to User Story #86322 (CAMOS BAU Support 08.26a)
+- ✅ Automatic designated folder checking (no user input needed)
+- ✅ Simplified workflow - no investigation routing to other skills
+- ✅ **Fixed parent link creation**: Two-step process using `az boards work-item relation add`
+- ✅ Auto-assignment to user who invoked skill
+- ✅ Time estimation (2h/4h/8h based on complexity)
+- ✅ Bug vs Task classification
+- ✅ Automatic archival to Archive\ subfolder
 
 **v2.0 (2026-07-28)** - AUTOMATED WORKFLOW ADDED
 - ✅ Complete email-to-task automation

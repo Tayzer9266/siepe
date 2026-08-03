@@ -132,7 +132,7 @@ try {
         Write-Host "`n[OK] Test execution started. Check console output or log file." -ForegroundColor Green
         
         if ($EnableLogging) {
-            $logPath = "C:\source\MD\AdminTools\Output\mossy-review-monitor.log"
+            $logPath = "C:\source\MD\AdminTools\.github\skills\ado-mossy-review\mossy-review-monitor.log"
             Write-Host "  Log: $logPath" -ForegroundColor Gray
         }
     }

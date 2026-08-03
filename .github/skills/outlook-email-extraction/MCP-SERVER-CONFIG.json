@@ -1,0 +1,113 @@
+{
+  "mcpServers": {
+    "mssql": {
+      "description": "SQL Server connection for MOS database investigations (optional - only needed for advanced Mossy investigations)",
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-mssql"
+      ],
+      "env": {
+        "MSSQL_SERVER": "mos-sql-p.mos.siepe.local,52155",
+        "MSSQL_DATABASE": "Core",
+        "MSSQL_TRUSTED_CONNECTION": "true"
+      },
+      "disabled": true,
+      "disabledReason": "Enable this only if you need Mossy to perform database investigations. Basic email processing does not require SQL Server access."
+    }
+  },
+  "readme": {
+    "title": "MCP Server Configuration for Email Processing Skill",
+    "description": "This configuration file is OPTIONAL. The basic email processing skill works without MCP servers. Only enable MCP servers if you need advanced database investigation capabilities.",
+    "mcpServerInfo": {
+      "whatIsMCP": "Model Context Protocol (MCP) servers extend agent capabilities by providing access to external systems like databases, APIs, and tools.",
+      "whenToEnable": [
+        "You need Mossy to investigate database issues",
+        "You want root cause analysis with SQL queries",
+        "You need SSIS execution log analysis",
+        "You want vendor price comparison across systems"
+      ],
+      "whenNotNeeded": [
+        "Basic email to ADO work item processing",
+        "Simple email parsing and classification",
+        "Screenshot analysis only",
+        "No database investigation required"
+      ]
+    },
+    "installation": {
+      "step1": "Locate your VS Code settings.json file",
+      "step1_location": "%APPDATA%\\Code\\User\\settings.json (Windows) or ~/.config/Code/User/settings.json (Linux/Mac)",
+      "step2": "Add the mcpServers section from this file to your settings.json",
+      "step3": "Change 'disabled: true' to 'disabled: false' for servers you want to enable",
+      "step4": "Update connection strings to match your environment",
+      "step5": "Restart VS Code to load MCP servers"
+    },
+    "configuration": {
+      "mssql_server": {
+        "description": "SQL Server MCP server for database investigations",
+        "required_for": [
+          "Pricing issue investigations (check vendor prices in databases)",
+          "Cash reconciliation (query position/balance tables)",
+          "Data normalization (Solvas vs MOS Portal comparison)",
+          "SSIS error analysis (ScriptAdapter execution logs)",
+          "Performance investigations (slow query analysis)"
+        ],
+        "connection_details": {
+          "server": "mos-sql-p.mos.siepe.local,52155",
+          "databases": [
+            "Core - vPosition, vInst, vPortfolio tables",
+            "Reference - tInstDebt, tSeniorityType metadata",
+            "Enterprise - ScriptAdapter logs, execution history"
+          ],
+          "authentication": "Windows Authentication (MSSQL_TRUSTED_CONNECTION=true)"
+        },
+        "customization": {
+          "change_server": "Update MSSQL_SERVER to your SQL Server instance",
+          "change_database": "Update MSSQL_DATABASE to default database (usually Core)",
+          "change_auth": "Set MSSQL_TRUSTED_CONNECTION=false and add MSSQL_USER/MSSQL_PASSWORD for SQL auth"
+        }
+      }
+    },
+    "security": {
+      "credential_storage": "Never store passwords in this file for distribution",
+      "use_windows_auth": "Preferred: Windows Authentication (MSSQL_TRUSTED_CONNECTION=true)",
+      "use_sql_auth": "If SQL auth required: Use environment variables, not hardcoded passwords",
+      "network_access": "Users must have network access to SQL Server from their machine"
+    },
+    "troubleshooting": {
+      "server_not_loading": [
+        "Check VS Code Output panel → MCP Servers",
+        "Verify npx is installed (comes with Node.js)",
+        "Run: npx -y @modelcontextprotocol/server-mssql --version",
+        "Restart VS Code after config changes"
+      ],
+      "connection_failed": [
+        "Verify SQL Server hostname and port",
+        "Test connection: sqlcmd -S mos-sql-p.mos.siepe.local,52155 -E",
+        "Check firewall allows port 52155",
+        "Verify Windows Authentication permissions"
+      ],
+      "skill_works_without_mcp": [
+        "Email processing does not require MCP servers",
+        "Basic workflow continues without database access",
+        "Investigation reports will note: 'Database investigation skipped (MCP not configured)'"
+      ]
+    },
+    "example_vs_code_settings": {
+      "description": "Example settings.json with MCP server enabled",
+      "content": {
+        "mcpServers": {
+          "mssql": {
+            "command": "npx",
+            "args": ["-y", "@modelcontextprotocol/server-mssql"],
+            "env": {
+              "MSSQL_SERVER": "mos-sql-p.mos.siepe.local,52155",
+              "MSSQL_DATABASE": "Core",
+              "MSSQL_TRUSTED_CONNECTION": "true"
+            }
+          }
+        }
+      }
+    }
+  }
+}

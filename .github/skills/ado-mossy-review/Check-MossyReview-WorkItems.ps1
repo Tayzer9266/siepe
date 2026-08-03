@@ -10,7 +10,7 @@ param(
     [string]$Organization = "https://siepe.visualstudio.com/",
     [string]$Project = "Siepe.Software",
     [switch]$LogToFile,
-    [string]$LogPath = "C:\source\MD\AdminTools\Output\mossy-review-monitor.log",
+    [string]$LogPath = "C:\source\MD\AdminTools\.github\skills\ado-mossy-review\mossy-review-monitor.log",
     [switch]$OnlyShowChanges  # Only output when new items appear
 )
 
@@ -113,8 +113,8 @@ try {
     # QUEUE MANAGEMENT WITH CONCURRENCY CONTROL
     # ================================================================
     
-    $stateFile = "C:\source\MD\AdminTools\Output\mossy-review-state.json"
-    $queueFile = "C:\source\MD\AdminTools\Output\mossy-review-queue.json"
+    $stateFile = "C:\source\MD\AdminTools\.github\skills\ado-mossy-review\mossy-review-state.json"
+    $queueFile = "C:\source\MD\AdminTools\.github\skills\ado-mossy-review\mossy-review-queue.json"
     $maxConcurrentReviews = 2  # Maximum items Mossy can review simultaneously
     
     $previousState = @{}
